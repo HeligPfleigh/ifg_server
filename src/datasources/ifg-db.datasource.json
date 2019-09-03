@@ -1,0 +1,6 @@
+{
+  "name": "ifg_db",
+  "connector": "memory",
+  "localStorage": "",
+  "file": "./data/db.json"
+}
