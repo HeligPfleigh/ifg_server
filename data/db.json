@@ -1,8 +1,10 @@
 {
   "ids": {
-    "User": 0
+    "User": 0,
+    "Feedback": 3
   },
   "models": {
-    "User": {}
+    "User": {},
+    "Feedback": {}
   }
 }
