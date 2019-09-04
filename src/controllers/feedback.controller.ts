@@ -12,9 +12,6 @@ import {
   getFilterSchemaFor,
   getModelSchemaRef,
   getWhereSchemaFor,
-  patch,
-  put,
-  del,
   requestBody,
 } from '@loopback/rest';
 import { Feedback } from '../models';
@@ -87,28 +84,6 @@ export class FeedbackController {
     return this.feedbackRepository.find(filter);
   }
 
-  @patch('/feedbacks', {
-    responses: {
-      '200': {
-        description: 'Feedback PATCH success count',
-        content: { 'application/json': { schema: CountSchema } },
-      },
-    },
-  })
-  async updateAll(
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(Feedback, { partial: true }),
-        },
-      },
-    })
-    feedback: Feedback,
-    @param.query.object('where', getWhereSchemaFor(Feedback)) where?: Where<Feedback>,
-  ): Promise<Count> {
-    return this.feedbackRepository.updateAll(feedback, where);
-  }
-
   @get('/feedbacks/{id}', {
     responses: {
       '200': {
@@ -119,51 +94,5 @@ export class FeedbackController {
   })
   async findById(@param.path.string('id') id: string): Promise<Feedback> {
     return this.feedbackRepository.findById(id);
-  }
-
-  @patch('/feedbacks/{id}', {
-    responses: {
-      '204': {
-        description: 'Feedback PATCH success',
-      },
-    },
-  })
-  async updateById(
-    @param.path.string('id') id: string,
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(Feedback, { partial: true }),
-        },
-      },
-    })
-    feedback: Feedback,
-  ): Promise<void> {
-    await this.feedbackRepository.updateById(id, feedback);
-  }
-
-  @put('/feedbacks/{id}', {
-    responses: {
-      '204': {
-        description: 'Feedback PUT success',
-      },
-    },
-  })
-  async replaceById(
-    @param.path.string('id') id: string,
-    @requestBody() feedback: Feedback,
-  ): Promise<void> {
-    await this.feedbackRepository.replaceById(id, feedback);
-  }
-
-  @del('/feedbacks/{id}', {
-    responses: {
-      '204': {
-        description: 'Feedback DELETE success',
-      },
-    },
-  })
-  async deleteById(@param.path.string('id') id: string): Promise<void> {
-    await this.feedbackRepository.deleteById(id);
   }
 }
