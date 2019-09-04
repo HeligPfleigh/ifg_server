@@ -1,161 +1,119 @@
 import {
-  Count,
-  CountSchema,
-  Filter,
   repository,
-  Where,
 } from '@loopback/repository';
 import {
   post,
   param,
   get,
-  getFilterSchemaFor,
-  getModelSchemaRef,
-  getWhereSchemaFor,
-  patch,
-  put,
-  del,
   requestBody,
 } from '@loopback/rest';
-import {Evaluation} from '../models';
-import {EvaluationRepository} from '../repositories';
+import { Evaluation } from '../models';
+import { EvaluationRepository } from '../repositories';
+import { EvaluationSchema, EvaluationRequestBody, DetailStatisticSchema, DetailEvaluationStatisticResponse, OverallStatisticSchema, OverallStatisticResponse } from './specs/evaluation.specs';
+import { authenticate, AuthenticationBindings, UserProfile } from '@loopback/authentication';
+import { inject } from '@loopback/core';
+import { validateSaveEvaluation, validateEvaluationType } from '../services/validator';
+import * as Enum from '../services/enum';
 
 export class EvaluationController {
   constructor(
     @repository(EvaluationRepository)
-    public evaluationRepository : EvaluationRepository,
-  ) {}
+    public evaluationRepository: EvaluationRepository,
+  ) { }
 
   @post('/evaluations', {
     responses: {
       '200': {
         description: 'Evaluation model instance',
-        content: {'application/json': {schema: getModelSchemaRef(Evaluation)}},
+        content: { 'application/json': { schema: EvaluationSchema } },
       },
     },
   })
+  @authenticate('jwt')
   async create(
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(Evaluation, {exclude: ['id']}),
-        },
-      },
-    })
+    @requestBody(EvaluationRequestBody)
     evaluation: Omit<Evaluation, 'id'>,
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUserProfile: UserProfile,
   ): Promise<Evaluation> {
-    return this.evaluationRepository.create(evaluation);
+    const { id } = currentUserProfile;
+    const newEvaluation = { ...evaluation, userId: id };
+    validateSaveEvaluation(evaluation);
+    return this.evaluationRepository.create(newEvaluation);
   }
 
-  @get('/evaluations/count', {
+  @get('/evaluations/{type}', {
     responses: {
       '200': {
-        description: 'Evaluation model count',
-        content: {'application/json': {schema: CountSchema}},
+        description: 'Statistic by evaluation type',
+        content: { 'application/json': { schema: DetailStatisticSchema } },
       },
     },
   })
-  async count(
-    @param.query.object('where', getWhereSchemaFor(Evaluation)) where?: Where<Evaluation>,
-  ): Promise<Count> {
-    return this.evaluationRepository.count(where);
+  @authenticate('jwt')
+  async getStatisticByType(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUserProfile: UserProfile,
+    @param.path.string('type') evaluationType: string,
+  ): Promise<DetailEvaluationStatisticResponse> {
+    const { id } = currentUserProfile;
+    let responses: DetailEvaluationStatisticResponse = {};
+    validateEvaluationType(evaluationType);
+
+    const evaluations = await this.evaluationRepository.find({ where: { userId: id, evaluationType } });
+
+    if (evaluations.length) {
+      const averageScore = evaluations.reduce((acc, evaluation) => acc + evaluation.score, 0) / evaluations.length;
+      const affections = evaluations.map(evaluation => {
+        return {
+          score: evaluation.score,
+          tags: evaluation.labelTag ? evaluation.labelTag : undefined,
+          factors: evaluation.influentFactor,
+        }
+      })
+      responses = {
+        score: averageScore,
+        affections,
+      }
+    }
+    return responses;
   }
 
-  @get('/evaluations', {
+  @get('/evaluations/overall', {
     responses: {
       '200': {
-        description: 'Array of Evaluation model instances',
-        content: {
-          'application/json': {
-            schema: {type: 'array', items: getModelSchemaRef(Evaluation)},
-          },
-        },
+        description: 'Overall evaluation statistic',
+        content: { 'application/json': { schema: OverallStatisticSchema } }
       },
     },
   })
-  async find(
-    @param.query.object('filter', getFilterSchemaFor(Evaluation)) filter?: Filter<Evaluation>,
-  ): Promise<Evaluation[]> {
-    return this.evaluationRepository.find(filter);
-  }
+  @authenticate('jwt')
+  async getOverallStatistic(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUserProfile: UserProfile,
+  ): Promise<OverallStatisticResponse> {
+    const { id } = currentUserProfile;
+    const evaluations = await this.evaluationRepository.find({ where: { userId: id } });
 
-  @patch('/evaluations', {
-    responses: {
-      '200': {
-        description: 'Evaluation PATCH success count',
-        content: {'application/json': {schema: CountSchema}},
-      },
-    },
-  })
-  async updateAll(
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(Evaluation, {partial: true}),
-        },
-      },
-    })
-    evaluation: Evaluation,
-    @param.query.object('where', getWhereSchemaFor(Evaluation)) where?: Where<Evaluation>,
-  ): Promise<Count> {
-    return this.evaluationRepository.updateAll(evaluation, where);
-  }
+    const getAverage = (evals: Evaluation[]) => {
+      if (evals.length === 0) return undefined;
+      let sum = 0;
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < evals.length; i++) { sum += evals[i].score; }
+      return sum / evals.length;
+    };
+    const overall = getAverage(evaluations);
+    const other = getAverage(evaluations.filter(evaluation => evaluation.evaluationType !== Enum.EvaluationType.OTHER));
+    const intakes = getAverage(evaluations.filter(evaluation => evaluation.evaluationType !== Enum.EvaluationType.INTAKES));
+    const activities = getAverage(evaluations.filter(evaluation => evaluation.evaluationType !== Enum.EvaluationType.ACTIVITIES));
+    const relationships = getAverage(evaluations.filter(evaluation => evaluation.evaluationType !== Enum.EvaluationType.RELATIONSHIPS));
 
-  @get('/evaluations/{id}', {
-    responses: {
-      '200': {
-        description: 'Evaluation model instance',
-        content: {'application/json': {schema: getModelSchemaRef(Evaluation)}},
-      },
-    },
-  })
-  async findById(@param.path.string('id') id: string): Promise<Evaluation> {
-    return this.evaluationRepository.findById(id);
-  }
-
-  @patch('/evaluations/{id}', {
-    responses: {
-      '204': {
-        description: 'Evaluation PATCH success',
-      },
-    },
-  })
-  async updateById(
-    @param.path.string('id') id: string,
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(Evaluation, {partial: true}),
-        },
-      },
-    })
-    evaluation: Evaluation,
-  ): Promise<void> {
-    await this.evaluationRepository.updateById(id, evaluation);
-  }
-
-  @put('/evaluations/{id}', {
-    responses: {
-      '204': {
-        description: 'Evaluation PUT success',
-      },
-    },
-  })
-  async replaceById(
-    @param.path.string('id') id: string,
-    @requestBody() evaluation: Evaluation,
-  ): Promise<void> {
-    await this.evaluationRepository.replaceById(id, evaluation);
-  }
-
-  @del('/evaluations/{id}', {
-    responses: {
-      '204': {
-        description: 'Evaluation DELETE success',
-      },
-    },
-  })
-  async deleteById(@param.path.string('id') id: string): Promise<void> {
-    await this.evaluationRepository.deleteById(id);
+    return {
+      overall,
+      other,
+      intakes,
+      activities,
+      relationships
+    };
   }
 }

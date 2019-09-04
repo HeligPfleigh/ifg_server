@@ -14,17 +14,17 @@ export class Evaluation extends Entity {
     type: 'string',
     required: true,
   })
-  type: string;
+  evaluationType: string;
 
   @property({
     type: 'string',
   })
-  influent_person?: string;
+  influentFactor?: string;
 
   @property({
     type: 'string',
   })
-  label_tag?: string;
+  labelTag?: string;
 
   @property({
     type: 'number',
@@ -36,6 +36,16 @@ export class Evaluation extends Entity {
     type: 'string',
   })
   image?: string;
+
+  @property({
+    type: 'string',
+  })
+  impactType?: string;
+
+  @property({
+    type: 'string',
+  })
+  description?: string;
 
   @belongsTo(() => User)
   userId: string;

@@ -6,6 +6,8 @@
 import { Credentials, IChangePassword } from '../repositories/user.repository';
 import * as isemail from 'isemail';
 import { HttpErrors } from '@loopback/rest';
+import { Evaluation } from '../models';
+import * as Enum from './enum';
 
 interface SignUpCredentials extends Credentials {
   email: string;
@@ -37,5 +39,26 @@ export function validateChangePassword(req: IChangePassword) {
 
   if (newPwd !== confirmPwd) {
     throw new HttpErrors.BadRequest('The confirmed password is not equal to new password!');
+  }
+}
+
+export function validateSaveEvaluation(req: Omit<Evaluation, 'id'>) {
+  const { evaluationType, labelTag, impactType } = req;
+  if (!Object.values(Enum.EvaluationType).includes(evaluationType)) {
+    throw new HttpErrors.BadRequest('The evaluation type isn\'t existed');
+  }
+
+  if (labelTag && !Object.values(Enum.Tags).includes(labelTag)) {
+    throw new HttpErrors.BadRequest('The tag isn\'t existed')
+  }
+
+  if (impactType && !Object.values(Enum.ImpactType).includes(impactType)) {
+    throw new HttpErrors.BadRequest('The impact type isn\'t existed')
+  }
+}
+
+export function validateEvaluationType(type: string) {
+  if (!Object.values(Enum.EvaluationType).includes(type)) {
+    throw new HttpErrors.BadRequest('The evaluation type isn\'t existed');
   }
 }
