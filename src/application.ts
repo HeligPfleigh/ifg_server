@@ -11,10 +11,11 @@ import * as path from 'path';
 import { AuthenticationComponent, registerAuthenticationStrategy } from '@loopback/authentication';
 import { MySequence } from './sequence';
 import { JWTAuthenticationStrategy } from './authentication-strategies/jwt-strategy';
-import { TokenServiceBindings, TokenServiceConstants, PasswordHasherBindings, UserServiceBindings } from './keys';
+import { TokenServiceBindings, TokenServiceConstants, PasswordHasherBindings, UserServiceBindings, MailServiceBindings } from './keys';
 import { JWTService } from './services/jwt-services';
 import { BcryptHasher } from './services/hash.password.bcryptjs';
 import { MyUserService } from './services/user-services';
+import { MailerService } from './services/mailer-services';
 
 export class IfgServerApplication extends BootMixin(
   ServiceMixin(RepositoryMixin(RestApplication)),
@@ -63,5 +64,6 @@ export class IfgServerApplication extends BootMixin(
     this.bind(PasswordHasherBindings.ROUNDS).to(10);
     this.bind(PasswordHasherBindings.PASSWORD_HASHER).toClass(BcryptHasher);
     this.bind(UserServiceBindings.USER_SERVICE).toClass(MyUserService);
+    this.bind(MailServiceBindings.MAIL_SERVICE).toClass(MailerService);
   }
 }

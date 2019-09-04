@@ -22,7 +22,7 @@ import { inject } from '@loopback/core';
 import pick from 'lodash/pick';
 import { User } from '../models';
 import { UserRepository, Credentials, IChangePassword, } from '../repositories';
-import { PasswordHasherBindings, TokenServiceBindings, UserServiceBindings } from '../keys';
+import { PasswordHasherBindings, TokenServiceBindings, UserServiceBindings, MailServiceBindings } from '../keys';
 import { PasswordHasher } from '../services/hash.password.bcryptjs';
 import { validateCredentials, validateChangePassword } from '../services/validator';
 import {
@@ -31,7 +31,9 @@ import {
   ChangePasswordRequestBody,
   UserNamespace,
   ChangeProfileRequestBody,
+  ForgotPasswordRequestBody,
 } from './specs/user-controller.specs';
+import { MailerService } from '../services/mailer-services';
 
 
 export class UserController {
@@ -39,7 +41,8 @@ export class UserController {
     @repository(UserRepository) public userRepository: UserRepository,
     @inject(PasswordHasherBindings.PASSWORD_HASHER) public passwordHasher: PasswordHasher,
     @inject(TokenServiceBindings.TOKEN_SERVICE) public jwtService: TokenService,
-    @inject(UserServiceBindings.USER_SERVICE) public userService: UserService<User, Credentials>
+    @inject(UserServiceBindings.USER_SERVICE) public userService: UserService<User, Credentials>,
+    @inject(MailServiceBindings.MAIL_SERVICE) public mailerService: MailerService,
   ) { }
 
   @post('/users', {
@@ -172,6 +175,50 @@ export class UserController {
     const user = this.userRepository.findById(id);
     const newUser = { ...user, ...req };
     await this.userRepository.updateById(id, newUser);
+  }
+
+  @patch('/users/me/forgotpwd', {
+    responses: {
+      '204': {
+        'description': 'Forgot password',
+      },
+    },
+  })
+  async forgotPassword(
+    @requestBody(ForgotPasswordRequestBody) request: { email: string }
+  ): Promise<void> {
+    try {
+      const { email } = request;
+
+      const randomPwd = (length: number) => {
+        let result = '';
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        const charactersLength = characters.length;
+        for (let i = 0; i < length; i++) {
+          result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        return result;
+      };
+
+      const [existedUser] = await this.userRepository.find({ where: { email } });
+      if (!existedUser) {
+        throw new HttpErrors.BadRequest('This user isn\'t existed');
+      };
+
+      const newPwd = randomPwd(16);
+
+      existedUser.password = await this.passwordHasher.hashPassword(newPwd);
+
+      await this.userRepository.updateById(existedUser.id, existedUser);
+
+      await this.mailerService.sendMail({
+        to: email,
+        subject: "Reset password",
+        html: `<p>Your request to reset password is processed. This is your new password: ${newPwd}</p>`
+      });
+    } catch (error) {
+      throw new HttpErrors.BadRequest('Some unexpected error occurred!')
+    }
   }
 
   @del('/users/me', {

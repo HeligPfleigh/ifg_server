@@ -63,6 +63,17 @@ const ChangeProfileSchema = {
   },
 };
 
+const ForgotPasswordSchema = {
+  type: 'object',
+  required: ['email'],
+  properties: {
+    email: {
+      type: 'string',
+      format: 'email',
+    },
+  },
+};
+
 export const CredentialsRequestBody = {
   description: 'The input of login function',
   required: true,
@@ -84,6 +95,14 @@ export const ChangeProfileRequestBody = {
   required: true,
   content: {
     'application/json': { schema: ChangeProfileSchema },
+  }
+}
+
+export const ForgotPasswordRequestBody = {
+  description: 'The input of forgot password function',
+  required: true,
+  content: {
+    'application/json': { schema: ForgotPasswordSchema },
   }
 }
 
