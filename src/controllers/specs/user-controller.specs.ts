@@ -23,11 +23,10 @@ export const UserTokenSchema = {
 
 const CredentialsSchema = {
   type: 'object',
-  required: ['email', 'password'],
+  required: ['username', 'password'],
   properties: {
-    email: {
+    username: {
       type: 'string',
-      format: 'email',
     },
     password: {
       type: 'string',
@@ -110,11 +109,13 @@ export namespace UserNamespace {
   export class UserProfile {
     firstName?: string;
     lastName?: string;
+    username: string;
     height?: number;
     weight?: number;
     gender?: boolean;
 
     constructor(user: User) {
+      this.username = user.username;
       this.firstName = user.firstName;
       this.lastName = user.lastName;
       this.height = user.height;

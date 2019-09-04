@@ -64,7 +64,7 @@ export class UserController {
     user: Omit<User, 'id'>,
   ): Promise<User> {
     // ensure a valid email value and password value
-    validateCredentials(pick(user, ['email', 'password']));
+    validateCredentials(pick(user, ['email', 'password', 'username']));
 
     // encrypt the password
     // eslint-disable-next-line require-atomic-updates
@@ -200,7 +200,8 @@ export class UserController {
         return result;
       };
 
-      const [existedUser] = await this.userRepository.find({ where: { email } });
+      const existedUser = await this.userRepository.findOne({ where: { email } });
+
       if (!existedUser) {
         throw new HttpErrors.BadRequest('This user isn\'t existed');
       };
@@ -217,7 +218,8 @@ export class UserController {
         html: `<p>Your request to reset password is processed. This is your new password: ${newPwd}</p>`
       });
     } catch (error) {
-      throw new HttpErrors.BadRequest('Some unexpected error occurred!')
+      console.log(error);
+      throw new HttpErrors.BadRequest(error);
     }
   }
 

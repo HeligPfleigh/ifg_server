@@ -7,10 +7,21 @@ import { Credentials, IChangePassword } from '../repositories/user.repository';
 import * as isemail from 'isemail';
 import { HttpErrors } from '@loopback/rest';
 
-export function validateCredentials(credentials: Credentials) {
+interface SignUpCredentials extends Credentials {
+  email: string;
+}
+
+export function validateCredentials(credentials: SignUpCredentials) {
   // Validate Email
   if (!isemail.validate(credentials.email)) {
     throw new HttpErrors.UnprocessableEntity('invalid email');
+  }
+
+  // Validate Username
+  if (credentials.username.length < 8) {
+    throw new HttpErrors.UnprocessableEntity(
+      'username must be minimum 8 characters',
+    );
   }
 
   // Validate Password Length

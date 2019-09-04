@@ -1,11 +1,8 @@
 {
   "ids": {
-    "User": 4
+    "User": 0
   },
   "models": {
-    "User": {
-      "1": "{\"email\":\"tuan.tran@mttjsc.com\",\"password\":\"$2a$10$l4QS8KP3W.qXbJ726gIA1.cwWD.rUB7iyrGWXXZcsuGPJgvjuQwWi\",\"firstName\":\"delta\",\"lastName\":\"alpha\",\"DOB\":\"2019-09-03T07:20:10.918Z\",\"height\":90,\"weight\":90,\"gender\":true,\"id\":\"1\"}",
-      "3": "{\"email\":\"test@1.com\",\"password\":\"$2a$10$344iKHyMGkC5GCRxb85P5eDZ27l38ZDrrwGAMj34EBSzMSY7HvEsy\",\"firstName\":\"alpha\",\"lastName\":\"test\",\"DOB\":\"2019-09-03T07:45:56.587Z\",\"height\":180,\"weight\":70,\"gender\":true,\"id\":\"3\"}"
-    }
+    "User": {}
   }
 }

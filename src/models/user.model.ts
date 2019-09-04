@@ -36,6 +36,12 @@ export class User extends Entity {
 
   @property({
     type: 'string',
+    required: true,
+  })
+  username: string;
+
+  @property({
+    type: 'string',
   })
   firstName?: string;
 

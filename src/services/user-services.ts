@@ -21,12 +21,12 @@ export class MyUserService implements UserService<User, Credentials> {
 
   async verifyCredentials(credentials: Credentials): Promise<User> {
     const foundUser = await this.userRepository.findOne({
-      where: { email: credentials.email },
+      where: { username: credentials.username },
     });
 
     if (!foundUser) {
       throw new HttpErrors.NotFound(
-        `User with email ${credentials.email} not found.`,
+        `User with name ${credentials.username} not found.`,
       );
     }
     const passwordMatched = await this.passwordHasher.comparePassword(

@@ -1,6 +1,6 @@
 import { SentMessageInfo } from 'nodemailer';
 import Mail = require('nodemailer/lib/mailer');
-const nodemailer = require("nodemailer");
+import * as nodemailer from 'nodemailer';
 import { config } from "../configs";
 
 export class MailerService {

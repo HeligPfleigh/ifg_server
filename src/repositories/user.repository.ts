@@ -4,7 +4,7 @@ import { IfgDbDataSource } from '../datasources';
 import { inject } from '@loopback/core';
 
 export type Credentials = {
-  email: string;
+  username: string;
   password: string;
 };
 
