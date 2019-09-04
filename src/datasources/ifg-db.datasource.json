@@ -1,6 +1,11 @@
 {
   "name": "ifg_db",
-  "connector": "memory",
-  "localStorage": "",
-  "file": "./data/db.json"
+  "connector": "mongodb",
+  "url": "mongodb://db:27017/ifg",
+  "host": "db",
+  "port": 27017,
+  "user": "admin",
+  "password": "Admin123$%^",
+  "database": "ifg",
+  "useNewUrlParser": true
 }
