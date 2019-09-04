@@ -43,7 +43,7 @@ export class FeedbackController {
         },
       },
     })
-    feedback: { message: string },
+    feedback: { message: string, subject: string },
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUserProfile: UserProfile,
   ): Promise<Feedback> {

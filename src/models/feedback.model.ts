@@ -15,6 +15,12 @@ export class Feedback extends Entity {
   })
   message: string;
 
+  @property({
+    type: 'string',
+    required: true,
+  })
+  subject: string;
+
   @belongsTo(() => User)
   userId: string;
 

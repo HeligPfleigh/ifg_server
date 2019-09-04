@@ -9,7 +9,7 @@ services:
     volumes:
     - ./src:/usr/ifg/src
     ports:
-    - '8000:3000'
+    - '8001:3000'
     depends_on:
     - db
   db:

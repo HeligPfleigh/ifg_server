@@ -4,8 +4,9 @@
 
 export const FeedbackSchema = {
   type: 'object',
-  required: ['message'],
+  required: ['message', 'subject'],
   properties: {
     message: { type: 'string' },
+    subject: { type: 'string' },
   },
 };
