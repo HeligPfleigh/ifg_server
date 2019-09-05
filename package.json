@@ -31,7 +31,7 @@
     "prestart": "npm run build",
     "start": "nodemon -r source-map-support/register .",
     "prepublishOnly": "npm run test",
-    "dev:docker": "docker-compose up -d"
+    "dev:docker": "docker-compose up -d --build"
   },
   "repository": {
     "type": "git"

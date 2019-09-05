@@ -16,7 +16,7 @@ import {
 } from '@loopback/rest';
 import { Feedback } from '../models';
 import { FeedbackRepository } from '../repositories';
-import { FeedbackSchema } from './specs/feedback-controlled.specs';
+import { FeedbackSchema } from './specs/feedback-controller.specs';
 import { AuthenticationBindings, UserProfile, authenticate } from '@loopback/authentication';
 import { inject } from '@loopback/core';
 
