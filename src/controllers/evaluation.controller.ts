@@ -8,7 +8,7 @@ import {
   requestBody,
 } from '@loopback/rest';
 import { Evaluation } from '../models';
-import { EvaluationRepository } from '../repositories';
+import { EvaluationRepository, UserRepository } from '../repositories';
 import { EvaluationSchema, EvaluationRequestBody, DetailStatisticSchema, DetailEvaluationStatisticResponse, OverallStatisticSchema, OverallStatisticResponse } from './specs/evaluation.specs';
 import { authenticate, AuthenticationBindings, UserProfile } from '@loopback/authentication';
 import { inject } from '@loopback/core';
@@ -19,6 +19,8 @@ export class EvaluationController {
   constructor(
     @repository(EvaluationRepository)
     public evaluationRepository: EvaluationRepository,
+    @repository(UserRepository)
+    public userRepository: UserRepository,
   ) { }
 
   @post('/evaluations', {
@@ -108,12 +110,8 @@ export class EvaluationController {
     const activities = getAverage(evaluations.filter(evaluation => evaluation.evaluationType === Enum.EvaluationType.ACTIVITIES));
     const relationships = getAverage(evaluations.filter(evaluation => evaluation.evaluationType === Enum.EvaluationType.RELATIONSHIPS));
 
-    let username = '', avatar;
-    if (evaluations.length) {
-      const owner = await this.evaluationRepository.user(evaluations[0].id);
-      username = owner.username;
-      avatar = owner.avatar;
-    }
+    const owner = await this.userRepository.findById(id);
+    const { username, avatar } = owner;
 
     return {
       username,
