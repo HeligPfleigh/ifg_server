@@ -60,7 +60,7 @@ export class EvaluationController {
     let responses: DetailEvaluationStatisticResponse = {};
     validateEvaluationType(evaluationType);
 
-    const evaluations = await this.evaluationRepository.find({ where: { userId: id, evaluationType } });
+    const evaluations = await this.evaluationRepository.find({ where: { userId: { like: id }, evaluationType } });
 
     if (evaluations.length) {
       const averageScore = evaluations.reduce((acc, evaluation) => acc + evaluation.score, 0) / evaluations.length;
@@ -93,7 +93,7 @@ export class EvaluationController {
     currentUserProfile: UserProfile,
   ): Promise<OverallStatisticResponse> {
     const { id } = currentUserProfile;
-    const evaluations = await this.evaluationRepository.find({ where: { userId: id } });
+    const evaluations = await this.evaluationRepository.find({ where: { userId: { like: id } } });
 
     const getAverage = (evals: Evaluation[]) => {
       if (evals.length === 0) return undefined;
@@ -103,10 +103,10 @@ export class EvaluationController {
       return sum / evals.length;
     };
     const overall = getAverage(evaluations);
-    const other = getAverage(evaluations.filter(evaluation => evaluation.evaluationType !== Enum.EvaluationType.OTHER));
-    const intakes = getAverage(evaluations.filter(evaluation => evaluation.evaluationType !== Enum.EvaluationType.INTAKES));
-    const activities = getAverage(evaluations.filter(evaluation => evaluation.evaluationType !== Enum.EvaluationType.ACTIVITIES));
-    const relationships = getAverage(evaluations.filter(evaluation => evaluation.evaluationType !== Enum.EvaluationType.RELATIONSHIPS));
+    const other = getAverage(evaluations.filter(evaluation => evaluation.evaluationType === Enum.EvaluationType.OTHER));
+    const intakes = getAverage(evaluations.filter(evaluation => evaluation.evaluationType === Enum.EvaluationType.INTAKES));
+    const activities = getAverage(evaluations.filter(evaluation => evaluation.evaluationType === Enum.EvaluationType.ACTIVITIES));
+    const relationships = getAverage(evaluations.filter(evaluation => evaluation.evaluationType === Enum.EvaluationType.RELATIONSHIPS));
 
     return {
       overall,
