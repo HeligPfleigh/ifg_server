@@ -52,13 +52,13 @@ const ChangePasswordSchema = {
 
 const ChangeProfileSchema = {
   type: 'object',
-  required: ['firstName', 'lastName', 'gender', 'height', 'weight'],
   properties: {
     firstName: { type: 'string' },
     lastName: { type: 'string' },
     gender: { type: 'boolean' },
     height: { type: 'number' },
     weight: { type: 'number' },
+    avatar: { type: 'string' },
   },
 };
 
@@ -113,6 +113,7 @@ export namespace UserNamespace {
     height?: number;
     weight?: number;
     gender?: boolean;
+    avatar?: string;
 
     constructor(user: User) {
       this.username = user.username;
@@ -121,6 +122,7 @@ export namespace UserNamespace {
       this.height = user.height;
       this.weight = user.weight;
       this.gender = user.gender;
+      this.avatar = user.avatar;
     }
   }
 }

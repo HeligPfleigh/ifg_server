@@ -70,6 +70,11 @@ export class User extends Entity {
   })
   gender?: boolean;
 
+  @property({
+    type: 'string',
+  })
+  avatar?: string;
+
   constructor(data?: Partial<User>) {
     super(data);
   }

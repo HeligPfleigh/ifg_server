@@ -3,7 +3,6 @@ import {
 } from '@loopback/repository';
 import {
   post,
-  param,
   get,
   getModelSchemaRef,
   patch,
@@ -108,27 +107,6 @@ export class UserController {
     const { id } = currentUserProfile;
     const user = await this.userRepository.findById(id);
     return new UserNamespace.UserProfile(user);
-  }
-
-  @patch('/users/{id}', {
-    responses: {
-      '204': {
-        description: 'User PATCH success',
-      },
-    },
-  })
-  async updateById(
-    @param.path.string('id') id: string,
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(User, { partial: true }),
-        },
-      },
-    })
-    user: User,
-  ): Promise<void> {
-    await this.userRepository.updateById(id, user);
   }
 
   @patch('/users/me/password', {
