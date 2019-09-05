@@ -55,9 +55,13 @@ export const OverallStatisticSchema = {
 }
 
 export type OverallStatisticResponse = {
-  relationships?: number,
-  activities?: number,
-  intakes?: number,
-  other?: number,
-  overall?: number,
+  username: string;
+  avatar?: string;
+  score: {
+    relationships?: number,
+    activities?: number,
+    intakes?: number,
+    other?: number,
+    overall?: number,
+  };
 }

@@ -108,12 +108,23 @@ export class EvaluationController {
     const activities = getAverage(evaluations.filter(evaluation => evaluation.evaluationType === Enum.EvaluationType.ACTIVITIES));
     const relationships = getAverage(evaluations.filter(evaluation => evaluation.evaluationType === Enum.EvaluationType.RELATIONSHIPS));
 
+    let username = '', avatar;
+    if (evaluations.length) {
+      const owner = await this.evaluationRepository.user(evaluations[0].id);
+      username = owner.username;
+      avatar = owner.avatar;
+    }
+
     return {
-      overall,
-      other,
-      intakes,
-      activities,
-      relationships
+      username,
+      avatar,
+      score: {
+        overall,
+        other,
+        intakes,
+        activities,
+        relationships,
+      },
     };
   }
 }
