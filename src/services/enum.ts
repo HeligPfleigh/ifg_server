@@ -32,4 +32,9 @@ enum NavigationParamsName {
   EVALUATION_DATA = 'evaluation_data',
 }
 
-export { EvaluationType, Feeling, ImpactType, ModalType, NavigationParamsName };
+enum ActionStatus {
+  ONGOING = 'ongoing',
+  ARCHIEVED = 'archieved',
+}
+
+export { ActionStatus, EvaluationType, Feeling, ImpactType, ModalType, NavigationParamsName };

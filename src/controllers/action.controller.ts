@@ -16,6 +16,7 @@ import { ActionRepository } from '../repositories';
 import { ActionRequestBody } from './specs/action-controller.specs';
 import { authenticate, AuthenticationBindings, UserProfile } from '@loopback/authentication';
 import { inject } from '@loopback/core';
+import { ActionStatus } from '../services/enum';
 
 export class ActionController {
   constructor(
@@ -39,7 +40,7 @@ export class ActionController {
     action: Omit<Action, 'id'>,
   ): Promise<Action> {
     const { id } = currentUserProfile;
-    const newAction = { ...action, userId: id };
+    const newAction = { ...action, userId: id, status: ActionStatus.ONGOING };
     return this.actionRepository.create(newAction);
   }
 
@@ -57,12 +58,12 @@ export class ActionController {
   })
   @authenticate('jwt')
   async getActionsByStatus(
-    @param.query.string('status') status: string,
+    @param.path.string('status') status: string,
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUserProfile: UserProfile,
   ): Promise<Action[]> {
     const { id } = currentUserProfile;
-    return this.actionRepository.find({ where: { userId: id, status } });
+    return this.actionRepository.find({ where: { status, userId: { like: id } } });
   }
 
   @patch('/actions/{id}', {

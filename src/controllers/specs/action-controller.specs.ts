@@ -4,10 +4,9 @@
 
 export const ActionSchema = {
   type: 'object',
-  required: ['action', 'status'],
+  required: ['action'],
   properties: {
     action: { type: 'string' },
-    status: { type: 'string' },
     reason: { type: 'string' },
   },
 };
