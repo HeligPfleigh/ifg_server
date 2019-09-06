@@ -62,7 +62,14 @@ export class EvaluationController {
     let responses: DetailEvaluationStatisticResponse = {};
     validateEvaluationType(evaluationType);
 
-    const evaluations = await this.evaluationRepository.find({ where: { userId: { like: id }, evaluationType } });
+    let filter;
+    if (evaluationType === 'overall') {
+      filter = { where: { userId: { like: id } } };
+    } else {
+      filter = { where: { userId: { like: id }, evaluationType } };
+    }
+
+    const evaluations = await this.evaluationRepository.find(filter);
 
     if (evaluations.length) {
       const averageScore = evaluations.reduce((acc, evaluation) => acc + evaluation.score, 0) / evaluations.length;
@@ -81,7 +88,7 @@ export class EvaluationController {
     return responses;
   }
 
-  @get('/evaluations/overall', {
+  @get('/evaluations/statistic', {
     responses: {
       '200': {
         description: 'Overall evaluation statistic',

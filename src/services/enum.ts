@@ -3,6 +3,7 @@ enum EvaluationType {
   ACTIVITIES = 'activities',
   INTAKES = 'intakes',
   OTHER = 'other',
+  OVERALL = 'overall',
 }
 
 enum Feeling {
