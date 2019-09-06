@@ -43,13 +43,9 @@ export function validateChangePassword(req: IChangePassword) {
 }
 
 export function validateSaveEvaluation(req: Omit<Evaluation, 'id'>) {
-  const { evaluationType, labelTag, impactType } = req;
+  const { evaluationType, impactType } = req;
   if (!Object.values(Enum.EvaluationType).includes(evaluationType)) {
     throw new HttpErrors.BadRequest('The evaluation type isn\'t existed');
-  }
-
-  if (labelTag && !Object.values(Enum.Tags).includes(labelTag)) {
-    throw new HttpErrors.BadRequest('The tag isn\'t existed')
   }
 
   if (impactType && !Object.values(Enum.ImpactType).includes(impactType)) {

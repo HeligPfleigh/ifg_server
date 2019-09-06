@@ -5,15 +5,6 @@ enum EvaluationType {
   OTHER = 'other',
 }
 
-enum Tags {
-  FAMILY = 'Family',
-  LOVER = 'Lover/Partner',
-  FRIENDS = 'Friends',
-  WORK = 'Work',
-  SOCIAL = 'Social',
-  OTHER = 'Other',
-}
-
 enum Feeling {
   GOOD = 'good',
   BAD = 'bad',
@@ -40,4 +31,4 @@ enum NavigationParamsName {
   EVALUATION_DATA = 'evaluation_data',
 }
 
-export { Tags, EvaluationType, Feeling, ImpactType, ModalType, NavigationParamsName };
+export { EvaluationType, Feeling, ImpactType, ModalType, NavigationParamsName };
