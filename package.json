@@ -30,6 +30,7 @@
     "migrate": "node ./dist/migrate",
     "prestart": "npm run build",
     "start": "nodemon -r source-map-support/register .",
+    "start:watch": "tsc-watch -b --onSuccess 'npm start'",
     "prepublishOnly": "npm run test",
     "dev:docker": "docker-compose up -d --build"
   },
@@ -82,6 +83,7 @@
     "eslint-plugin-mocha": "^6.1.0",
     "nodemon": "^1.19.2",
     "source-map-support": "^0.5.13",
+    "tsc-watch": "^3.0.0",
     "typescript": "~3.5.3"
   }
 }

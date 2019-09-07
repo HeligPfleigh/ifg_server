@@ -1,4 +1,15 @@
+.git
+.vscode
 node_modules
 npm-debug.log
 /dist
-
+.eslintignore
+.eslintrc.js
+.gitignore
+.mocharc.json
+.prettierignore
+.prettierrc
+docker-compose.yml
+Dockerfile
+package-lock.json
+yarn.lock
