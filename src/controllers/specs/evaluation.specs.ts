@@ -2,17 +2,19 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
+import {UserNamespace} from './user-controller.specs';
+
 export const EvaluationSchema = {
   type: 'object',
   required: ['evaluationType', 'influentFactor', 'score'],
   properties: {
-    evaluationType: { type: 'string' },
-    influentFactor: { type: 'string' },
-    score: { type: 'number' },
-    labelTag: { type: 'string' },
-    image: { type: 'string' },
-    impactType: { type: 'string' },
-    description: { type: 'string' },
+    evaluationType: {type: 'string'},
+    influentFactor: {type: 'string'},
+    score: {type: 'number'},
+    labelTag: {type: 'string'},
+    image: {type: 'string'},
+    impactType: {type: 'string'},
+    description: {type: 'string'},
   },
 };
 
@@ -20,7 +22,7 @@ export const EvaluationRequestBody = {
   description: 'The input of saving evaluation',
   required: true,
   content: {
-    'application/json': { schema: EvaluationSchema },
+    'application/json': {schema: EvaluationSchema},
   },
 };
 
@@ -30,7 +32,7 @@ export const DetailStatisticSchema = {
     score: 'number',
     affections: 'array',
   },
-}
+};
 
 interface Affection {
   factors?: string;
@@ -41,7 +43,7 @@ interface Affection {
 export type DetailEvaluationStatisticResponse = {
   score?: number;
   affections?: Affection[];
-}
+};
 
 export const OverallStatisticSchema = {
   type: 'object',
@@ -51,17 +53,16 @@ export const OverallStatisticSchema = {
     intakes: 'number',
     other: 'number',
     overall: 'number',
-  }
-}
+  },
+};
 
 export type OverallStatisticResponse = {
-  username: string;
-  avatar?: string;
+  user: UserNamespace.UserProfile;
   score: {
-    relationships?: number,
-    activities?: number,
-    intakes?: number,
-    other?: number,
-    overall?: number,
+    relationships?: number;
+    activities?: number;
+    intakes?: number;
+    other?: number;
+    overall?: number;
   };
-}
+};
