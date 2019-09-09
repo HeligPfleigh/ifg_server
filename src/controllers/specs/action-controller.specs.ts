@@ -11,6 +11,14 @@ export const ActionSchema = {
   },
 };
 
+export const ActionsSchema = {
+  type: 'object',
+  required: ['actions'],
+  properties: {
+    actions: { type: 'array' },
+  },
+}
+
 export const ActionRequestBody = {
   description: 'The input of saving action',
   required: true,
@@ -18,3 +26,13 @@ export const ActionRequestBody = {
     'application/json': { schema: ActionSchema },
   },
 };
+
+export const ActionsRequestBody = {
+  description: 'Archieved actions',
+  required: true,
+  content: {
+    'application/json': {
+      schema: ActionsSchema
+    }
+  }
+}

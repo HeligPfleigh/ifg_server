@@ -13,7 +13,7 @@ import {
 } from '@loopback/rest';
 import { Action } from '../models';
 import { ActionRepository } from '../repositories';
-import { ActionRequestBody } from './specs/action-controller.specs';
+import { ActionRequestBody, ActionsRequestBody } from './specs/action-controller.specs';
 import { authenticate, AuthenticationBindings, UserProfile } from '@loopback/authentication';
 import { inject } from '@loopback/core';
 import { ActionStatus } from '../services/enum';
@@ -78,23 +78,18 @@ export class ActionController {
     @param.path.string('id') id: string,
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUserProfile: UserProfile,
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(Action, { partial: true }),
-        },
-      },
-    })
-    action: Action,
+    @requestBody(ActionRequestBody)
+    req: { action: string },
   ): Promise<void> {
     const userId = currentUserProfile.id;
+    const { action } = req;
     const shouldUpdateAction = await this.actionRepository.findOne({
-      where: { userId, id },
+      where: { userId: { like: userId }, id },
     });
     if (!shouldUpdateAction) {
       throw new HttpErrors.BadRequest('Action isn\'t existed or isn\'t owned by yourself!');
     }
-    await this.actionRepository.updateById(id, action);
+    await this.actionRepository.updateById(id, { action });
   }
 
   @del('/actions/{id}', {
@@ -112,11 +107,55 @@ export class ActionController {
   ): Promise<void> {
     const userId = currentUserProfile.id;
     const shouldUpdateAction = await this.actionRepository.findOne({
-      where: { userId, id },
+      where: { userId: { like: userId }, id },
     });
     if (!shouldUpdateAction) {
       throw new HttpErrors.BadRequest('Action isn\'t existed or isn\'t owned by yourself!');
     }
     await this.actionRepository.deleteById(id);
+  }
+
+  @post('/actions/archieve', {
+    responses: {
+      '204': {
+        description: 'Actions are archieved',
+      },
+    },
+  })
+  @authenticate('jwt')
+  async markAsArchieved(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUserProfile: UserProfile,
+    @requestBody(ActionsRequestBody)
+    req: { actions: string[] },
+  ): Promise<void> {
+    const { id } = currentUserProfile;
+    const { actions } = req;
+    await this.actionRepository.updateAll({ status: ActionStatus.ARCHIEVED }, {
+      userId: { like: id },
+      or: actions.map(act => ({ id: act }))
+    })
+  }
+
+  @post('/actions/list', {
+    responses: {
+      '204': {
+        description: 'Actions DELETE success',
+      },
+    },
+  })
+  @authenticate('jwt')
+  async deleteListActions(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUserProfile: UserProfile,
+    @requestBody(ActionsRequestBody)
+    req: { actions: string[] },
+  ): Promise<void> {
+    const { id } = currentUserProfile;
+    const { actions } = req;
+    await this.actionRepository.deleteAll({
+      userId: { like: id },
+      or: actions.map(act => ({ id: act }))
+    })
   }
 }
