@@ -2,7 +2,6 @@
 .vscode
 node_modules
 npm-debug.log
-/dist
 .eslintignore
 .eslintrc.js
 .gitignore
