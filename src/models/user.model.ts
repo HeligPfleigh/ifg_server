@@ -1,4 +1,4 @@
-import { Entity, model, property } from '@loopback/repository';
+import {Entity, model, property} from '@loopback/repository';
 
 @model({
   settings: {
@@ -53,7 +53,7 @@ export class User extends Entity {
   @property({
     type: 'date',
   })
-  DOB?: string;
+  DOB?: Date;
 
   @property({
     type: 'number',
@@ -66,9 +66,9 @@ export class User extends Entity {
   weight?: number;
 
   @property({
-    type: 'boolean',
+    type: 'string',
   })
-  gender?: boolean;
+  gender?: string;
 
   @property({
     type: 'string',
