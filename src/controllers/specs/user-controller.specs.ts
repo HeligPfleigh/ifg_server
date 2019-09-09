@@ -55,10 +55,11 @@ const ChangeProfileSchema = {
   properties: {
     firstName: {type: 'string'},
     lastName: {type: 'string'},
-    gender: {type: 'boolean'},
+    gender: {type: 'string'},
     height: {type: 'number'},
     weight: {type: 'number'},
     avatar: {type: 'string'},
+    DOB: {type: 'string', format: 'date-time'},
   },
 };
 
@@ -112,7 +113,8 @@ export namespace UserNamespace {
     username: string;
     height?: number;
     weight?: number;
-    gender?: boolean;
+    gender?: string;
+    DOB?: Date;
     avatar?: string;
 
     constructor(user: User) {
@@ -122,6 +124,7 @@ export namespace UserNamespace {
       this.height = user.height;
       this.weight = user.weight;
       this.gender = user.gender;
+      this.DOB = user.DOB;
       this.avatar = user.avatar;
     }
   }
