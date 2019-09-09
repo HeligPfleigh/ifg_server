@@ -12,7 +12,7 @@ import {
   HttpErrors,
 } from '@loopback/rest';
 import { Action } from '../models';
-import { ActionRepository } from '../repositories';
+import { ActionRepository, EvaluationRepository } from '../repositories';
 import { ActionRequestBody, ActionsRequestBody } from './specs/action-controller.specs';
 import { authenticate, AuthenticationBindings, UserProfile } from '@loopback/authentication';
 import { inject } from '@loopback/core';
@@ -22,6 +22,8 @@ export class ActionController {
   constructor(
     @repository(ActionRepository)
     public actionRepository: ActionRepository,
+    @repository(EvaluationRepository)
+    public evaluationRepository: EvaluationRepository,
   ) { }
 
   @post('/actions', {
@@ -157,5 +159,39 @@ export class ActionController {
       userId: { like: id },
       or: actions.map(act => ({ id: act }))
     })
+  }
+
+  @get('/actions/reasons', {
+    responses: {
+      '200': {
+        description: 'List reasons for action',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              required: ['reasons'],
+              properties: {
+                reasons: { type: 'array' },
+              }
+            }
+          }
+        },
+      },
+    },
+  })
+  @authenticate('jwt')
+  async getListReasons(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUserProfile: UserProfile,
+  ): Promise<{ reasons: string[]; }> {
+    const { id } = currentUserProfile;
+    const evaluations = await this.evaluationRepository.find({ where: { userId: { like: id } } });
+    const reasons = [];
+    for (const evaluation of evaluations) {
+      if (evaluation.influentFactor) {
+        reasons.push(evaluation.influentFactor)
+      }
+    }
+    return { reasons };
   }
 }
