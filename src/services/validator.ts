@@ -5,12 +5,22 @@
 
 import {Credentials, IChangePassword} from '../repositories/user.repository';
 import * as isemail from 'isemail';
+import get from 'lodash/get';
+import isString from 'lodash/isString';
 import {HttpErrors} from '@loopback/rest';
 import {Evaluation} from '../models';
 import * as Enum from './enum';
 
 interface SignUpCredentials extends Credentials {
   email: string;
+}
+
+export function validateEmail(data: string | object) {
+  const email = isString(data) ? data : get(data, 'email');
+  // Validate Email
+  if (!isemail.validate(email)) {
+    throw new HttpErrors.UnprocessableEntity('invalid email');
+  }
 }
 
 export function validateCredentials(credentials: SignUpCredentials) {

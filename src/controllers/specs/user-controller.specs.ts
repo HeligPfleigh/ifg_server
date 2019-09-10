@@ -35,6 +35,21 @@ const CredentialsSchema = {
   },
 };
 
+const ChangeEmailSchema = {
+  type: 'object',
+  required: ['password', 'email'],
+  properties: {
+    password: {
+      type: 'string',
+      minLength: 8,
+    },
+    email: {
+      type: 'string',
+      format: 'email',
+    },
+  },
+};
+
 const ChangePasswordSchema = {
   type: 'object',
   required: ['currentPwd', 'newPwd', 'confirmPwd'],
@@ -83,6 +98,14 @@ export const CredentialsRequestBody = {
   required: true,
   content: {
     'application/json': {schema: CredentialsSchema},
+  },
+};
+
+export const ChangeEmailRequestBody = {
+  description: 'The input of changing email function',
+  required: true,
+  content: {
+    'application/json': {schema: ChangeEmailSchema},
   },
 };
 

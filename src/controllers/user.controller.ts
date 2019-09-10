@@ -17,8 +17,14 @@ import {
 } from '@loopback/authentication';
 import {inject} from '@loopback/core';
 import pick from 'lodash/pick';
+import isEqual from 'lodash/isEqual';
 import {User} from '../models';
-import {UserRepository, Credentials, IChangePassword} from '../repositories';
+import {
+  UserRepository,
+  Credentials,
+  IChangePassword,
+  IChangeEmail,
+} from '../repositories';
 import {
   PasswordHasherBindings,
   TokenServiceBindings,
@@ -29,6 +35,7 @@ import {PasswordHasher} from '../services/hash.password.bcryptjs';
 import {
   validateCredentials,
   validateChangePassword,
+  validateEmail,
 } from '../services/validator';
 import {
   UserTokenSchema,
@@ -37,6 +44,7 @@ import {
   UserNamespace,
   ChangeProfileRequestBody,
   ForgotPasswordRequestBody,
+  ChangeEmailRequestBody,
 } from './specs/user-controller.specs';
 import {MailerService} from '../services/mailer-services';
 
@@ -117,6 +125,50 @@ export class UserController {
     return new UserNamespace.UserProfile(user);
   }
 
+  @patch('/users/me/change-email', {
+    responses: {
+      '200': {
+        description: 'Change user email',
+      },
+    },
+  })
+  @authenticate('jwt')
+  async changeEmail(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUserProfile: UserProfile,
+    @requestBody(ChangeEmailRequestBody) request: IChangeEmail,
+  ): Promise<void> {
+    const {password, email} = request;
+    const {id, email: currentEmail} = currentUserProfile;
+    if (!isEqual(currentEmail, email)) {
+      // validate email
+      validateEmail(request);
+      const existedUser = await this.userRepository.findOne({where: {email}});
+      if (existedUser) {
+        throw new HttpErrors.BadRequest('This email is already registered.');
+      }
+      const user = await this.userRepository.findById(id);
+      // verify current password
+      const passwordMatched = await this.passwordHasher.comparePassword(
+        password,
+        user.password,
+      );
+      if (!passwordMatched) {
+        throw new HttpErrors.BadRequest('Current password mismatch.');
+      }
+      // pass all rules will set new email
+      user.email = email;
+      // save user info into database
+      await this.userRepository.updateById(id, user);
+      // notice action into user via new email
+      await this.mailerService.sendMail({
+        to: email,
+        subject: 'Change email successfuly',
+        html: `<p>Your request to change email is processed. This is your new email: ${email}</p>`,
+      });
+    }
+  }
+
   @patch('/users/me/password', {
     responses: {
       '204': {
@@ -140,10 +192,11 @@ export class UserController {
       user.password,
     );
     if (!passwordMatched) {
-      throw new HttpErrors.NotFound('Current password mismatch.');
+      throw new HttpErrors.BadRequest('Current password mismatch.');
     }
     // eslint-disable-next-line require-atomic-updates
     user.password = await this.passwordHasher.hashPassword(newPwd);
+    // persitance user info
     await this.userRepository.updateById(id, user);
   }
 

@@ -8,6 +8,11 @@ export type Credentials = {
   password: string;
 };
 
+export type IChangeEmail = {
+  password: string;
+  email: string;
+};
+
 export type IChangePassword = {
   currentPwd: string;
   newPwd: string;
