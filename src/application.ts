@@ -81,7 +81,6 @@ export class IfgServerApplication extends BootMixin(
     const admin = await userRepo.findOne({
       where: {
         email: adminInfo.email,
-        username: adminInfo.username,
       }
     });
     if (!admin) {
