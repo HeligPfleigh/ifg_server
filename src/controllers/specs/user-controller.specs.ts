@@ -135,6 +135,7 @@ export const ForgotPasswordRequestBody = {
 
 export namespace UserNamespace {
   export class UserProfile {
+    email?: string;
     firstName?: string;
     lastName?: string;
     username: string;
@@ -145,6 +146,7 @@ export namespace UserNamespace {
     avatar?: string;
 
     constructor(user: User) {
+      this.email = user.email;
       this.username = user.username;
       this.firstName = user.firstName;
       this.lastName = user.lastName;
