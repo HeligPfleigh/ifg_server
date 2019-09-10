@@ -37,8 +37,12 @@ const CredentialsSchema = {
 
 const ChangePasswordSchema = {
   type: 'object',
-  required: ['newPwd', 'confirmPwd'],
+  required: ['currentPwd', 'newPwd', 'confirmPwd'],
   properties: {
+    currentPwd: {
+      type: 'string',
+      minLength: 8,
+    },
     newPwd: {
       type: 'string',
       minLength: 8,

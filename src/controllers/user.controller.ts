@@ -1,6 +1,4 @@
-import {
-  repository,
-} from '@loopback/repository';
+import {repository} from '@loopback/repository';
 import {
   post,
   get,
@@ -17,13 +15,21 @@ import {
   AuthenticationBindings,
   UserProfile,
 } from '@loopback/authentication';
-import { inject } from '@loopback/core';
+import {inject} from '@loopback/core';
 import pick from 'lodash/pick';
-import { User } from '../models';
-import { UserRepository, Credentials, IChangePassword, } from '../repositories';
-import { PasswordHasherBindings, TokenServiceBindings, UserServiceBindings, MailServiceBindings } from '../keys';
-import { PasswordHasher } from '../services/hash.password.bcryptjs';
-import { validateCredentials, validateChangePassword } from '../services/validator';
+import {User} from '../models';
+import {UserRepository, Credentials, IChangePassword} from '../repositories';
+import {
+  PasswordHasherBindings,
+  TokenServiceBindings,
+  UserServiceBindings,
+  MailServiceBindings,
+} from '../keys';
+import {PasswordHasher} from '../services/hash.password.bcryptjs';
+import {
+  validateCredentials,
+  validateChangePassword,
+} from '../services/validator';
 import {
   UserTokenSchema,
   CredentialsRequestBody,
@@ -32,23 +38,25 @@ import {
   ChangeProfileRequestBody,
   ForgotPasswordRequestBody,
 } from './specs/user-controller.specs';
-import { MailerService } from '../services/mailer-services';
-
+import {MailerService} from '../services/mailer-services';
 
 export class UserController {
   constructor(
     @repository(UserRepository) public userRepository: UserRepository,
-    @inject(PasswordHasherBindings.PASSWORD_HASHER) public passwordHasher: PasswordHasher,
+    @inject(PasswordHasherBindings.PASSWORD_HASHER)
+    public passwordHasher: PasswordHasher,
     @inject(TokenServiceBindings.TOKEN_SERVICE) public jwtService: TokenService,
-    @inject(UserServiceBindings.USER_SERVICE) public userService: UserService<User, Credentials>,
-    @inject(MailServiceBindings.MAIL_SERVICE) public mailerService: MailerService,
-  ) { }
+    @inject(UserServiceBindings.USER_SERVICE)
+    public userService: UserService<User, Credentials>,
+    @inject(MailServiceBindings.MAIL_SERVICE)
+    public mailerService: MailerService,
+  ) {}
 
   @post('/users', {
     responses: {
       '200': {
         description: 'User model instance',
-        content: { 'application/json': { schema: getModelSchemaRef(User) } },
+        content: {'application/json': {schema: getModelSchemaRef(User)}},
       },
     },
   })
@@ -56,7 +64,7 @@ export class UserController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(User, { exclude: ['id'] }),
+          schema: getModelSchemaRef(User, {exclude: ['id']}),
         },
       },
     })
@@ -92,7 +100,7 @@ export class UserController {
         content: {
           'application/json': {
             schema: getModelSchemaRef(User, {
-              exclude: ['id', 'password']
+              exclude: ['id', 'password'],
             }),
           },
         },
@@ -104,7 +112,7 @@ export class UserController {
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUserProfile: UserProfile,
   ): Promise<UserNamespace.UserProfile> {
-    const { id } = currentUserProfile;
+    const {id} = currentUserProfile;
     const user = await this.userRepository.findById(id);
     return new UserNamespace.UserProfile(user);
   }
@@ -112,20 +120,28 @@ export class UserController {
   @patch('/users/me/password', {
     responses: {
       '204': {
-        'description': 'Change password',
-      }
-    }
+        description: 'Change password',
+      },
+    },
   })
   @authenticate('jwt')
   async changePassword(
-    @inject(AuthenticationBindings.CURRENT_USER) currentUserProfile: UserProfile,
-    @requestBody(ChangePasswordRequestBody) request: IChangePassword
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUserProfile: UserProfile,
+    @requestBody(ChangePasswordRequestBody) request: IChangePassword,
   ): Promise<void> {
-    const { newPwd } = request;
+    const {currentPwd, newPwd} = request;
     validateChangePassword(request);
-    const { id } = currentUserProfile;
-
+    const {id} = currentUserProfile;
     const user = await this.userRepository.findById(id);
+    // verify current password
+    const passwordMatched = await this.passwordHasher.comparePassword(
+      currentPwd,
+      user.password,
+    );
+    if (!passwordMatched) {
+      throw new HttpErrors.NotFound('Current password mismatch.');
+    }
     // eslint-disable-next-line require-atomic-updates
     user.password = await this.passwordHasher.hashPassword(newPwd);
     await this.userRepository.updateById(id, user);
@@ -134,55 +150,59 @@ export class UserController {
   @patch('/users/me/profile', {
     responses: {
       '200': {
-        'description': 'Change profile',
-        'content': {
+        description: 'Change profile',
+        content: {
           'application/json': {
-            schema: UserNamespace.UserProfile
-          }
-        }
-      }
-    }
+            schema: UserNamespace.UserProfile,
+          },
+        },
+      },
+    },
   })
   @authenticate('jwt')
   async updateProfile(
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUserProfile: UserProfile,
-    @requestBody(ChangeProfileRequestBody) req: UserNamespace.UserProfile
+    @requestBody(ChangeProfileRequestBody) req: UserNamespace.UserProfile,
   ): Promise<void> {
-    const { id } = currentUserProfile;
+    const {id} = currentUserProfile;
     const user = this.userRepository.findById(id);
-    const newUser = { ...user, ...req };
+    const newUser = {...user, ...req};
     await this.userRepository.updateById(id, newUser);
   }
 
   @patch('/users/me/forgotpwd', {
     responses: {
       '204': {
-        'description': 'Forgot password',
+        description: 'Forgot password',
       },
     },
   })
-  async forgotPassword(
-    @requestBody(ForgotPasswordRequestBody) request: { email: string }
-  ): Promise<void> {
+  async forgotPassword(@requestBody(ForgotPasswordRequestBody)
+  request: {
+    email: string;
+  }): Promise<void> {
     try {
-      const { email } = request;
+      const {email} = request;
 
       const randomPwd = (length: number) => {
         let result = '';
-        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        const characters =
+          'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         const charactersLength = characters.length;
         for (let i = 0; i < length; i++) {
-          result += characters.charAt(Math.floor(Math.random() * charactersLength));
+          result += characters.charAt(
+            Math.floor(Math.random() * charactersLength),
+          );
         }
         return result;
       };
 
-      const existedUser = await this.userRepository.findOne({ where: { email } });
+      const existedUser = await this.userRepository.findOne({where: {email}});
 
       if (!existedUser) {
-        throw new HttpErrors.BadRequest('This user isn\'t existed');
-      };
+        throw new HttpErrors.BadRequest("This user isn't existed");
+      }
 
       const newPwd = randomPwd(16);
 
@@ -192,8 +212,8 @@ export class UserController {
 
       await this.mailerService.sendMail({
         to: email,
-        subject: "Reset password",
-        html: `<p>Your request to reset password is processed. This is your new password: ${newPwd}</p>`
+        subject: 'Reset password',
+        html: `<p>Your request to reset password is processed. This is your new password: ${newPwd}</p>`,
       });
     } catch (error) {
       console.log(error);
@@ -213,28 +233,28 @@ export class UserController {
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUserProfile: UserProfile,
   ): Promise<void> {
-    const { id } = currentUserProfile;
+    const {id} = currentUserProfile;
     await this.userRepository.deleteById(id);
   }
 
   @post('/users/login', {
     responses: {
       '200': {
-        'description': 'Login',
-        'content': {
+        description: 'Login',
+        content: {
           'application/json': {
             schema: UserTokenSchema,
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   })
   async login(
-    @requestBody(CredentialsRequestBody) credentials: Credentials
-  ): Promise<{ token: string }> {
+    @requestBody(CredentialsRequestBody) credentials: Credentials,
+  ): Promise<{token: string}> {
     const user = await this.userService.verifyCredentials(credentials);
     const userProfile = this.userService.convertToUserProfile(user);
     const token = await this.jwtService.generateToken(userProfile);
-    return ({ token });
+    return {token};
   }
 }
