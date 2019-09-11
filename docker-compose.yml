@@ -1,4 +1,4 @@
-version: "3"
+version: "3.3"
 
 services:
   api:
@@ -14,7 +14,22 @@ services:
     command: ["yarn", "start:watch"]
     depends_on:
       - db
+    secrets:
+      - admin
+      - firebaseDatabaseURL
+      - serviceAccountKey
+    environment:
+      ADMIN: '/run/secrets/admin'
+      FIREBASE_DATABASE_URL: '/run/secrets/firebaseDatabaseURL'
+      FIREBASE_SERVICE_ACCOUNT: '/run/secrets/serviceAccountKey'
   db:
     image: mongo:4
     ports:
       - "27037:27017"
+secrets:
+  admin:
+    file: ./secrets/admin.json
+  firebaseDatabaseURL:
+    file: ./secrets/firebaseDatabaseURL
+  serviceAccountKey:
+    file: ./secrets/serviceAccountKey.json
