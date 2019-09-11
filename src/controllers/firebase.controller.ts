@@ -7,10 +7,13 @@ import {
   getModelSchemaRef,
   patch,
   requestBody,
+  HttpErrors,
 } from '@loopback/rest';
 import { Firebase } from '../models';
 import { FirebaseRepository } from '../repositories';
 import { CreateFirebaseTokenRequestBody } from "./specs/firebase-controller.specs";
+import { authenticate, AuthenticationBindings, UserProfile } from '@loopback/authentication';
+import { inject } from '@loopback/core';
 
 export class FirebaseController {
   constructor(
@@ -35,15 +38,16 @@ export class FirebaseController {
       await this.firebaseRepository.create(firebase);
   }
 
-  @patch('/firebases/{id}', {
+  @patch('/firebases/{firebaseToken}', {
     responses: {
       '204': {
         description: 'Firebase PATCH success',
       },
     },
   })
+  @authenticate('jwt')
   async updateById(
-    @param.path.string('id') id: string,
+    @param.path.string('firebaseToken') firebaseToken: string,
     @requestBody({
       content: {
         'application/json': {
@@ -52,7 +56,14 @@ export class FirebaseController {
       },
     })
     firebase: Firebase,
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUserProfile: UserProfile,
   ): Promise<void> {
-    await this.firebaseRepository.updateById(id, firebase);
+    const existFirebaseToken = await this.firebaseRepository.findOne({ where: { firebaseToken } });
+    if (!existFirebaseToken) {
+      throw new HttpErrors.BadRequest('Token isn\'t existed');
+    }
+    const updateData = { ...firebase, userId: currentUserProfile.id }
+    await this.firebaseRepository.updateById(existFirebaseToken.id, updateData);
   }
 }
