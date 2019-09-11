@@ -9,14 +9,16 @@ import { RestApplication } from '@loopback/rest';
 import { ServiceMixin } from '@loopback/service-proxy';
 import * as path from 'path';
 import { AuthenticationComponent, registerAuthenticationStrategy } from '@loopback/authentication';
+import fs from 'fs';
 import { MySequence } from './sequence';
 import { JWTAuthenticationStrategy } from './authentication-strategies/jwt-strategy';
-import { TokenServiceBindings, TokenServiceConstants, PasswordHasherBindings, UserServiceBindings, MailServiceBindings } from './keys';
+import { TokenServiceBindings, TokenServiceConstants, PasswordHasherBindings, UserServiceBindings, MailServiceBindings, NotificationServiceBinding } from './keys';
 import { JWTService } from './services/jwt-services';
 import { BcryptHasher } from './services/hash.password.bcryptjs';
 import { MyUserService } from './services/user-services';
 import { MailerService } from './services/mailer-services';
 import { UserRepository } from './repositories';
+import { NotificationService } from './services/notification-services';
 
 export class IfgServerApplication extends BootMixin(
   ServiceMixin(RepositoryMixin(RestApplication)),
@@ -66,16 +68,26 @@ export class IfgServerApplication extends BootMixin(
     this.bind(PasswordHasherBindings.PASSWORD_HASHER).toClass(BcryptHasher);
     this.bind(UserServiceBindings.USER_SERVICE).toClass(MyUserService);
     this.bind(MailServiceBindings.MAIL_SERVICE).toClass(MailerService);
+    this.bind(NotificationServiceBinding.NOTIFICATION_SERVICE)
+      .toClass(NotificationService);
+  }
+
+  loadAdminInfo() {
+    try {
+      const fileName = process.env.ADMIN || '';
+      const data = fs.readFileSync(fileName, 'utf8').trim();
+      return JSON.parse(data);
+    } catch (error) {
+      return undefined;
+    }
   }
 
   async migrateSchema(options?: SchemaMigrationOptions) {
     await super.migrateSchema(options);
 
-    const adminInfo = {
-      email: 'Ifeelgood.hello@gmail.com',
-      username: 'thuhien.le',
-      password: 'Admin123$%^',
-    }
+    const adminInfo = this.loadAdminInfo();
+
+    if (!adminInfo) return;
 
     const userRepo = await this.getRepository(UserRepository);
     const admin = await userRepo.findOne({

@@ -4,6 +4,7 @@
 import { BindingKey } from '@loopback/context';
 import { PasswordHasher } from './services/hash.password.bcryptjs';
 import { MailerService } from "./services/mailer-services";
+import { NotificationService } from "./services/notification-services";
 import { TokenService, UserService } from '@loopback/authentication';
 import { User } from './models';
 import { Credentials } from './repositories';
@@ -41,5 +42,11 @@ export namespace UserServiceBindings {
 export namespace MailServiceBindings {
   export const MAIL_SERVICE = BindingKey.create<MailerService>(
     'services.mailer',
+  );
+}
+
+export namespace NotificationServiceBinding {
+  export const NOTIFICATION_SERVICE = BindingKey.create<NotificationService>(
+    'service.notification',
   );
 }
