@@ -1,0 +1,28 @@
+stages:
+  - build
+  - deploy
+
+Build Raw Image:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - echo "$CI_REGISTRY_USER"
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME --cache-from $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+  variables:
+    DOCKER_DRIVER: overlay2
+  only:
+    - master
+
+Publish Devlopment:
+  stage: deploy
+  image: mttjsc/rancher-compose-executor:latest
+  script:
+    - rancher-compose --url $RANCHER_SERVER --access-key $RANCHER_ACCESS_KEY --secret-key $RANCHER_SECRET_KEY --project-name I-FEEL-GOOD --file ci/rancher.yml --verbose up --pull -d --force-upgrade
+    - rancher-compose --url $RANCHER_SERVER --access-key $RANCHER_ACCESS_KEY --secret-key $RANCHER_SECRET_KEY --project-name I-FEEL-GOOD --file ci/rancher.yml up -d --upgrade --confirm-upgrade
+  only:
+    - master
