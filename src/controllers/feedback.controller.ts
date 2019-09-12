@@ -15,15 +15,21 @@ import {
   requestBody,
 } from '@loopback/rest';
 import { Feedback } from '../models';
-import { FeedbackRepository } from '../repositories';
+import { FeedbackRepository, UserRepository } from '../repositories';
 import { FeedbackSchema } from './specs/feedback-controller.specs';
 import { AuthenticationBindings, UserProfile, authenticate } from '@loopback/authentication';
 import { inject } from '@loopback/core';
+import { MailServiceBindings } from '../keys';
+import { MailerService } from '../services/mailer-services';
 
 export class FeedbackController {
   constructor(
     @repository(FeedbackRepository)
     public feedbackRepository: FeedbackRepository,
+    @repository(UserRepository)
+    public userRepository: UserRepository,
+    @inject(MailServiceBindings.MAIL_SERVICE)
+    public mailerService: MailerService,
   ) { }
 
   @post('/feedbacks', {
@@ -48,6 +54,13 @@ export class FeedbackController {
     currentUserProfile: UserProfile,
   ): Promise<Feedback> {
     const { id } = currentUserProfile;
+    const user = await this.userRepository.findById(id);
+    const { username, email } = user;
+    await this.mailerService.sendMail({
+      to: 'ifeelgood.hello@gmail.com',
+      subject: `Feedback from ${username} - ${email}`,
+      html: `<div><p>${feedback.subject}</p><p>${feedback.message}</p></div>`,
+    })
     const newFeedback = { ...feedback, userId: id };
     return this.feedbackRepository.create(newFeedback);
   }
