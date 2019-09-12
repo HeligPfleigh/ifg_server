@@ -25,17 +25,10 @@ services:
 
   db:
     image: mongo:4
-    environment:
-      MONGO_DATA_DIR: /data/db
-      MONGO_LOG_DIR: /dev/null
-    volumes:
-      - /mtt-ready/i-feel-good/mongodb:/data/db
     ports:
       - "27037:27017"
-    command:
-      - mongod
-      - --smallfiles
-      - --logpath=/dev/null
+    volumes:
+      - /mtt-ready/i-feel-good/mongodb:/data/db
     labels:
       io.rancher.container.system: MTT-LOCAL
       io.rancher.container.pull_image: always
