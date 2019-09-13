@@ -37,4 +37,9 @@ enum ActionStatus {
   ARCHIEVED = 'archieved',
 }
 
-export { ActionStatus, EvaluationType, Feeling, ImpactType, ModalType, NavigationParamsName };
+enum NotificationStatus {
+  SENT = 'sent',
+  WAITING = 'waiting',
+}
+
+export { ActionStatus, EvaluationType, Feeling, ImpactType, ModalType, NavigationParamsName, NotificationStatus };

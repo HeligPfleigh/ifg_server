@@ -1,4 +1,4 @@
-import {Entity, model, property} from '@loopback/repository';
+import { Entity, model, property } from '@loopback/repository';
 
 @model({
   settings: {
@@ -74,6 +74,12 @@ export class User extends Entity {
     type: 'string',
   })
   avatar?: string;
+
+  @property({
+    type: 'boolean',
+    default: false,
+  })
+  isAdmin?: boolean
 
   constructor(data?: Partial<User>) {
     super(data);

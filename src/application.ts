@@ -103,6 +103,7 @@ export class IfgServerApplication extends BootMixin(
         email: adminInfo.email,
         username: adminInfo.username,
         password: hashPwd,
+        isAdmin: true,
       });
     }
   }
