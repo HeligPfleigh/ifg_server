@@ -3,16 +3,16 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {Credentials, IChangePassword} from '../repositories/user.repository';
+import { Credentials, IChangePassword } from '../repositories/user.repository';
 import * as isemail from 'isemail';
 import get from 'lodash/get';
 import isString from 'lodash/isString';
-import {HttpErrors} from '@loopback/rest';
-import {Evaluation} from '../models';
+import { HttpErrors } from '@loopback/rest';
+import { Evaluation } from '../models';
 import * as Enum from './enum';
 
 interface SignUpCredentials extends Credentials {
-  email: string;
+  username: string;
 }
 
 export function validateEmail(data: string | object) {
@@ -45,7 +45,7 @@ export function validateCredentials(credentials: SignUpCredentials) {
 }
 
 export function validateChangePassword(req: IChangePassword) {
-  const {newPwd, confirmPwd} = req;
+  const { newPwd, confirmPwd } = req;
 
   if (newPwd !== confirmPwd) {
     throw new HttpErrors.BadRequest(
@@ -55,7 +55,7 @@ export function validateChangePassword(req: IChangePassword) {
 }
 
 export function validateSaveEvaluation(req: Omit<Evaluation, 'id'>) {
-  const {evaluationType, impactType} = req;
+  const { evaluationType, impactType } = req;
   if (!Object.values(Enum.EvaluationType).includes(evaluationType)) {
     throw new HttpErrors.BadRequest("The evaluation type isn't existed");
   }

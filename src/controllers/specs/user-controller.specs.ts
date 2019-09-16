@@ -1,4 +1,4 @@
-import {User} from '../../models';
+import { User } from '../../models';
 
 // Copyright IBM Corp. 2019. All Rights Reserved.
 // This file is licensed under the MIT License.
@@ -8,25 +8,26 @@ export const UserProfileSchema = {
   type: 'object',
   required: ['id'],
   properties: {
-    id: {type: 'string'},
-    email: {type: 'string'},
-    name: {type: 'string'},
+    id: { type: 'string' },
+    email: { type: 'string' },
+    name: { type: 'string' },
   },
 };
 
 export const UserTokenSchema = {
   type: 'object',
   properties: {
-    token: {type: 'string'},
+    token: { type: 'string' },
   },
 };
 
 const CredentialsSchema = {
   type: 'object',
-  required: ['username', 'password'],
+  required: ['email', 'password'],
   properties: {
     username: {
       type: 'string',
+      format: 'email',
     },
     password: {
       type: 'string',
@@ -72,13 +73,13 @@ const ChangePasswordSchema = {
 const ChangeProfileSchema = {
   type: 'object',
   properties: {
-    firstName: {type: 'string'},
-    lastName: {type: 'string'},
-    gender: {type: 'string'},
-    height: {type: 'number'},
-    weight: {type: 'number'},
-    avatar: {type: 'string'},
-    DOB: {type: 'string', format: 'date-time'},
+    firstName: { type: 'string' },
+    lastName: { type: 'string' },
+    gender: { type: 'string' },
+    height: { type: 'number' },
+    weight: { type: 'number' },
+    avatar: { type: 'string' },
+    DOB: { type: 'string', format: 'date-time' },
   },
 };
 
@@ -97,7 +98,7 @@ export const CredentialsRequestBody = {
   description: 'The input of login function',
   required: true,
   content: {
-    'application/json': {schema: CredentialsSchema},
+    'application/json': { schema: CredentialsSchema },
   },
 };
 
@@ -105,7 +106,7 @@ export const ChangeEmailRequestBody = {
   description: 'The input of changing email function',
   required: true,
   content: {
-    'application/json': {schema: ChangeEmailSchema},
+    'application/json': { schema: ChangeEmailSchema },
   },
 };
 
@@ -113,7 +114,7 @@ export const ChangePasswordRequestBody = {
   description: 'The input of changing password function',
   required: true,
   content: {
-    'application/json': {schema: ChangePasswordSchema},
+    'application/json': { schema: ChangePasswordSchema },
   },
 };
 
@@ -121,7 +122,7 @@ export const ChangeProfileRequestBody = {
   description: 'The input of changing profile function',
   required: true,
   content: {
-    'application/json': {schema: ChangeProfileSchema},
+    'application/json': { schema: ChangeProfileSchema },
   },
 };
 
@@ -129,7 +130,7 @@ export const ForgotPasswordRequestBody = {
   description: 'The input of forgot password function',
   required: true,
   content: {
-    'application/json': {schema: ForgotPasswordSchema},
+    'application/json': { schema: ForgotPasswordSchema },
   },
 };
 
