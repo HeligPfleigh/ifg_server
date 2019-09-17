@@ -1,24 +1,36 @@
-import { BootMixin } from '@loopback/boot';
-import { ApplicationConfig } from '@loopback/core';
+import {BootMixin} from '@loopback/boot';
+import {ApplicationConfig} from '@loopback/core';
 import {
   RestExplorerBindings,
   RestExplorerComponent,
 } from '@loopback/rest-explorer';
-import { RepositoryMixin, SchemaMigrationOptions } from '@loopback/repository';
-import { RestApplication } from '@loopback/rest';
-import { ServiceMixin } from '@loopback/service-proxy';
+import {RepositoryMixin, SchemaMigrationOptions} from '@loopback/repository';
+import {RestApplication} from '@loopback/rest';
+import {ServiceMixin} from '@loopback/service-proxy';
 import * as path from 'path';
-import { AuthenticationComponent, registerAuthenticationStrategy } from '@loopback/authentication';
+import {
+  AuthenticationComponent,
+  registerAuthenticationStrategy,
+} from '@loopback/authentication';
 import fs from 'fs';
-import { MySequence } from './sequence';
-import { JWTAuthenticationStrategy } from './authentication-strategies/jwt-strategy';
-import { TokenServiceBindings, TokenServiceConstants, PasswordHasherBindings, UserServiceBindings, MailServiceBindings, NotificationServiceBinding } from './keys';
-import { JWTService } from './services/jwt-services';
-import { BcryptHasher } from './services/hash.password.bcryptjs';
-import { MyUserService } from './services/user-services';
-import { MailerService } from './services/mailer-services';
-import { UserRepository } from './repositories';
-import { NotificationService } from './services/notification-services';
+import {MySequence} from './sequence';
+import {JWTAuthenticationStrategy} from './authentication-strategies/jwt-strategy';
+import {
+  TokenServiceBindings,
+  TokenServiceConstants,
+  PasswordHasherBindings,
+  UserServiceBindings,
+  MailServiceBindings,
+  NotificationServiceBinding,
+  UploadFileServiceBinding,
+} from './keys';
+import {JWTService} from './services/jwt-services';
+import {BcryptHasher} from './services/hash.password.bcryptjs';
+import {MyUserService} from './services/user-services';
+import {MailerService} from './services/mailer-services';
+import {UserRepository} from './repositories';
+import {NotificationService} from './services/notification-services';
+import {UploadFileService} from './services/uploadfile-service';
 
 export class IfgServerApplication extends BootMixin(
   ServiceMixin(RepositoryMixin(RestApplication)),
@@ -68,8 +80,10 @@ export class IfgServerApplication extends BootMixin(
     this.bind(PasswordHasherBindings.PASSWORD_HASHER).toClass(BcryptHasher);
     this.bind(UserServiceBindings.USER_SERVICE).toClass(MyUserService);
     this.bind(MailServiceBindings.MAIL_SERVICE).toClass(MailerService);
-    this.bind(NotificationServiceBinding.NOTIFICATION_SERVICE)
-      .toClass(NotificationService);
+    this.bind(NotificationServiceBinding.NOTIFICATION_SERVICE).toClass(
+      NotificationService,
+    );
+    this.bind(UploadFileServiceBinding.FILE_SERVICE).toClass(UploadFileService);
   }
 
   loadAdminInfo() {
@@ -93,11 +107,12 @@ export class IfgServerApplication extends BootMixin(
     const admin = await userRepo.findOne({
       where: {
         email: adminInfo.email,
-      }
+      },
     });
     if (!admin) {
-      const passwordHasher =
-        new BcryptHasher(Number(PasswordHasherBindings.ROUNDS));
+      const passwordHasher = new BcryptHasher(
+        Number(PasswordHasherBindings.ROUNDS),
+      );
       const hashPwd = await passwordHasher.hashPassword(adminInfo.password);
       await userRepo.create({
         email: adminInfo.email,

@@ -2,26 +2,25 @@
 // Node module: @loopback/authentication
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
-import { HttpErrors } from '@loopback/rest';
-import { Credentials, UserRepository } from '../repositories/user.repository';
-import { User } from '../models/user.model';
-import { UserService, UserProfile } from '@loopback/authentication';
-import { repository } from '@loopback/repository';
-import { PasswordHasher } from './hash.password.bcryptjs';
-import { PasswordHasherBindings } from '../keys';
-import { inject } from '@loopback/context';
-
+import {HttpErrors} from '@loopback/rest';
+import {inject} from '@loopback/context';
+import {repository} from '@loopback/repository';
+import {UserService, UserProfile} from '@loopback/authentication';
+import {User} from '../models/user.model';
+import {PasswordHasher} from './hash.password.bcryptjs';
+import {Credentials, UserRepository} from '../repositories/user.repository';
+import {PasswordHasherBindings} from '../keys';
 
 export class MyUserService implements UserService<User, Credentials> {
   constructor(
     @repository(UserRepository) public userRepository: UserRepository,
     @inject(PasswordHasherBindings.PASSWORD_HASHER)
     public passwordHasher: PasswordHasher,
-  ) { }
+  ) {}
 
   async verifyCredentials(credentials: Credentials): Promise<User> {
     const foundUser = await this.userRepository.findOne({
-      where: { email: credentials.email },
+      where: {email: credentials.email},
     });
 
     if (!foundUser) {
@@ -49,6 +48,6 @@ export class MyUserService implements UserService<User, Credentials> {
       userName = user.firstName
         ? `${userName} ${user.lastName}`
         : `${user.lastName}`;
-    return { id: user.id, name: userName };
+    return {id: user.id, name: userName};
   }
 }

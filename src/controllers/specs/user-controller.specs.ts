@@ -118,6 +118,18 @@ export const ChangePasswordRequestBody = {
   },
 };
 
+export const ChangeAvatarRequestBody = {
+  description: 'The input of changing avatar function',
+  required: true,
+  content: {
+    'multipart/form-data': {
+      // Skip body parsing
+      'x-parser': 'stream',
+      schema: {type: 'object'},
+    },
+  },
+};
+
 export const ChangeProfileRequestBody = {
   description: 'The input of changing profile function',
   required: true,

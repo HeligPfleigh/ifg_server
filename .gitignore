@@ -66,3 +66,6 @@ typings/
 yarn.lock
 package-lock.json
 .DS_Store
+
+# ignore uploads folder
+public/uploads

@@ -1,13 +1,14 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import { BindingKey } from '@loopback/context';
-import { PasswordHasher } from './services/hash.password.bcryptjs';
-import { MailerService } from "./services/mailer-services";
-import { NotificationService } from "./services/notification-services";
-import { TokenService, UserService } from '@loopback/authentication';
-import { User } from './models';
-import { Credentials } from './repositories';
+import {BindingKey} from '@loopback/context';
+import {TokenService, UserService} from '@loopback/authentication';
+import {User} from './models';
+import {Credentials} from './repositories';
+import {MailerService} from './services/mailer-services';
+import {PasswordHasher} from './services/hash.password.bcryptjs';
+import {NotificationService} from './services/notification-services';
+import {UploadFileService} from './services/uploadfile-service';
 
 export namespace TokenServiceConstants {
   export const TOKEN_SECRET_VALUE = '6o8hhl8y6sgf8nej';
@@ -48,5 +49,11 @@ export namespace MailServiceBindings {
 export namespace NotificationServiceBinding {
   export const NOTIFICATION_SERVICE = BindingKey.create<NotificationService>(
     'service.notification',
+  );
+}
+
+export namespace UploadFileServiceBinding {
+  export const FILE_SERVICE = BindingKey.create<UploadFileService>(
+    'uploadfile.utils',
   );
 }

@@ -7,6 +7,9 @@ import {
   del,
   requestBody,
   HttpErrors,
+  Request,
+  Response,
+  RestBindings,
 } from '@loopback/rest';
 import {
   TokenService,
@@ -16,8 +19,11 @@ import {
   UserProfile,
 } from '@loopback/authentication';
 import {inject} from '@loopback/core';
+import _get from 'lodash/get';
 import pick from 'lodash/pick';
+import isEmpty from 'lodash/isEmpty';
 import isEqual from 'lodash/isEqual';
+import {existsSync, unlinkSync} from 'fs';
 import {User} from '../models';
 import {
   UserRepository,
@@ -30,8 +36,8 @@ import {
   TokenServiceBindings,
   UserServiceBindings,
   MailServiceBindings,
+  UploadFileServiceBinding,
 } from '../keys';
-import {PasswordHasher} from '../services/hash.password.bcryptjs';
 import {
   validateCredentials,
   validateChangePassword,
@@ -45,19 +51,25 @@ import {
   ChangeProfileRequestBody,
   ForgotPasswordRequestBody,
   ChangeEmailRequestBody,
+  ChangeAvatarRequestBody,
 } from './specs/user-controller.specs';
+import {PasswordHasher} from '../services/hash.password.bcryptjs';
 import {MailerService} from '../services/mailer-services';
+import {UploadFileService} from '../services/uploadfile-service';
 
 export class UserController {
   constructor(
     @repository(UserRepository) public userRepository: UserRepository,
     @inject(PasswordHasherBindings.PASSWORD_HASHER)
     public passwordHasher: PasswordHasher,
-    @inject(TokenServiceBindings.TOKEN_SERVICE) public jwtService: TokenService,
+    @inject(TokenServiceBindings.TOKEN_SERVICE)
+    public jwtService: TokenService,
     @inject(UserServiceBindings.USER_SERVICE)
     public userService: UserService<User, Credentials>,
     @inject(MailServiceBindings.MAIL_SERVICE)
     public mailerService: MailerService,
+    @inject(UploadFileServiceBinding.FILE_SERVICE)
+    private fileService: UploadFileService,
   ) {}
 
   @post('/users', {
@@ -200,6 +212,56 @@ export class UserController {
     await this.userRepository.updateById(id, user);
   }
 
+  @patch('/users/me/change-avatar', {
+    responses: {
+      '200': {
+        description: '[POST] Change user avatar successfully.',
+      },
+    },
+  })
+  @authenticate('jwt')
+  async changeAvatar(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUserProfile: UserProfile,
+    @requestBody(ChangeAvatarRequestBody) request: Request,
+    @inject(RestBindings.Http.RESPONSE) response: Response,
+  ): Promise<void> {
+    try {
+      // process upload file
+      const data = await this.fileService.upload();
+      const avatar = _get(data, 'files.[0].path');
+      if (!isEmpty(avatar)) {
+        // process user info
+        const {id} = currentUserProfile;
+        const user = await this.userRepository.findById(id);
+        try {
+          // remove old avatar
+          const currentAvatar = _get(user, 'avatar', '');
+          if (!isEmpty(currentAvatar) && existsSync(currentAvatar)) {
+            unlinkSync(currentAvatar);
+          }
+        } catch (error) {
+          // ignore error when remove old avatar
+        }
+        // update new avatar path
+        if (avatar.startsWith('public/')) {
+          // remove static directory
+          user.avatar = avatar.substring(7);
+        } else {
+          user.avatar = avatar;
+        }
+        // save user info into database
+        await this.userRepository.updateById(id, user);
+      }
+    } catch (error) {
+      if (error instanceof HttpErrors.UnsupportedMediaType) {
+        throw new HttpErrors.UnsupportedMediaType();
+      } else {
+        throw new HttpErrors.BadRequest(error);
+      }
+    }
+  }
+
   @patch('/users/me/profile', {
     responses: {
       '200': {
@@ -219,7 +281,7 @@ export class UserController {
     @requestBody(ChangeProfileRequestBody) req: UserNamespace.UserProfile,
   ): Promise<void> {
     const {id} = currentUserProfile;
-    const user = this.userRepository.findById(id);
+    const user = await this.userRepository.findById(id);
     const newUser = {...user, ...req};
     await this.userRepository.updateById(id, newUser);
   }
@@ -269,7 +331,6 @@ export class UserController {
         html: `<p>Your request to reset password is processed. This is your new password: ${newPwd}</p>`,
       });
     } catch (error) {
-      console.log(error);
       throw new HttpErrors.BadRequest(error);
     }
   }
