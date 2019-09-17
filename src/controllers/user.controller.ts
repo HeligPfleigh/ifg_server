@@ -237,8 +237,11 @@ export class UserController {
         try {
           // remove old avatar
           const currentAvatar = _get(user, 'avatar', '');
-          if (!isEmpty(currentAvatar) && existsSync(currentAvatar)) {
-            unlinkSync(currentAvatar);
+          if (
+            !isEmpty(currentAvatar) &&
+            existsSync(`public/${currentAvatar}`)
+          ) {
+            unlinkSync(`public/${currentAvatar}`);
           }
         } catch (error) {
           // ignore error when remove old avatar
