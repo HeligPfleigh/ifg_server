@@ -13,14 +13,23 @@ import {
   getModelSchemaRef,
   getWhereSchemaFor,
   requestBody,
+  HttpErrors,
 } from '@loopback/rest';
-import { Feedback } from '../models';
-import { FeedbackRepository, UserRepository } from '../repositories';
-import { FeedbackSchema } from './specs/feedback-controller.specs';
-import { AuthenticationBindings, UserProfile, authenticate } from '@loopback/authentication';
-import { inject } from '@loopback/core';
-import { MailServiceBindings } from '../keys';
-import { MailerService } from '../services/mailer-services';
+import getValue from 'lodash/get';
+import pick from 'lodash/pick';
+import isEmpty from 'lodash/isEmpty';
+import {
+  AuthenticationBindings,
+  UserProfile,
+  authenticate,
+} from '@loopback/authentication';
+import {inject} from '@loopback/core';
+import {Feedback} from '../models';
+import {PasswordHasherBindings, MailServiceBindings} from '../keys';
+import {FeedbackRepository, UserRepository} from '../repositories';
+import {FeedbackSchema} from './specs/feedback-controller.specs';
+import {MailerService} from '../services/mailer-services';
+import {PasswordHasher} from '../services/hash.password.bcryptjs';
 
 export class FeedbackController {
   constructor(
@@ -28,15 +37,17 @@ export class FeedbackController {
     public feedbackRepository: FeedbackRepository,
     @repository(UserRepository)
     public userRepository: UserRepository,
+    @inject(PasswordHasherBindings.PASSWORD_HASHER)
+    public passwordHasher: PasswordHasher,
     @inject(MailServiceBindings.MAIL_SERVICE)
     public mailerService: MailerService,
-  ) { }
+  ) {}
 
   @post('/feedbacks', {
     responses: {
       '200': {
         description: 'Feedback model instance',
-        content: { 'application/json': { schema: getModelSchemaRef(Feedback) } },
+        content: {'application/json': {schema: getModelSchemaRef(Feedback)}},
       },
     },
   })
@@ -49,19 +60,31 @@ export class FeedbackController {
         },
       },
     })
-    feedback: { message: string, subject: string },
+    request: {message: string; subject: string; password?: string},
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUserProfile: UserProfile,
   ): Promise<Feedback> {
-    const { id } = currentUserProfile;
+    const {id} = currentUserProfile;
     const user = await this.userRepository.findById(id);
-    const { username, email } = user;
+    const {username, email} = user;
+    // verify current password
+    const password = getValue(request, 'password', '');
+    if (!isEmpty(password)) {
+      const passwordMatched = await this.passwordHasher.comparePassword(
+        password,
+        user.password,
+      );
+      if (!passwordMatched) {
+        throw new HttpErrors.BadRequest('Current password mismatch.');
+      }
+    }
+    const feedback = pick(request, ['subject', 'message']);
     await this.mailerService.sendMail({
       to: 'ifeelgood.hello@gmail.com',
       subject: `Feedback from ${username} - ${email}`,
       html: `<div><p>${feedback.subject}</p><p>${feedback.message}</p></div>`,
-    })
-    const newFeedback = { ...feedback, userId: id };
+    });
+    const newFeedback = {...feedback, userId: id};
     return this.feedbackRepository.create(newFeedback);
   }
 
@@ -69,12 +92,13 @@ export class FeedbackController {
     responses: {
       '200': {
         description: 'Feedback model count',
-        content: { 'application/json': { schema: CountSchema } },
+        content: {'application/json': {schema: CountSchema}},
       },
     },
   })
   async count(
-    @param.query.object('where', getWhereSchemaFor(Feedback)) where?: Where<Feedback>,
+    @param.query.object('where', getWhereSchemaFor(Feedback))
+    where?: Where<Feedback>,
   ): Promise<Count> {
     return this.feedbackRepository.count(where);
   }
@@ -85,14 +109,15 @@ export class FeedbackController {
         description: 'Array of Feedback model instances',
         content: {
           'application/json': {
-            schema: { type: 'array', items: getModelSchemaRef(Feedback) },
+            schema: {type: 'array', items: getModelSchemaRef(Feedback)},
           },
         },
       },
     },
   })
   async find(
-    @param.query.object('filter', getFilterSchemaFor(Feedback)) filter?: Filter<Feedback>,
+    @param.query.object('filter', getFilterSchemaFor(Feedback))
+    filter?: Filter<Feedback>,
   ): Promise<Feedback[]> {
     return this.feedbackRepository.find(filter);
   }
@@ -101,7 +126,7 @@ export class FeedbackController {
     responses: {
       '200': {
         description: 'Feedback model instance',
-        content: { 'application/json': { schema: getModelSchemaRef(Feedback) } },
+        content: {'application/json': {schema: getModelSchemaRef(Feedback)}},
       },
     },
   })

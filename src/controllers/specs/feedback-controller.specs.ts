@@ -6,7 +6,8 @@ export const FeedbackSchema = {
   type: 'object',
   required: ['message', 'subject'],
   properties: {
-    message: { type: 'string' },
-    subject: { type: 'string' },
+    message: {type: 'string'},
+    subject: {type: 'string'},
+    password: {type: 'string'},
   },
 };
