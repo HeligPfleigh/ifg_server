@@ -1,4 +1,4 @@
-import {repository} from '@loopback/repository';
+import { repository } from '@loopback/repository';
 import {
   post,
   get,
@@ -18,13 +18,13 @@ import {
   AuthenticationBindings,
   UserProfile,
 } from '@loopback/authentication';
-import {inject} from '@loopback/core';
+import { inject } from '@loopback/core';
 import _get from 'lodash/get';
 import pick from 'lodash/pick';
 import isEmpty from 'lodash/isEmpty';
 import isEqual from 'lodash/isEqual';
-import {existsSync, unlinkSync} from 'fs';
-import {User} from '../models';
+import { existsSync, unlinkSync } from 'fs';
+import { User } from '../models';
 import {
   UserRepository,
   Credentials,
@@ -53,9 +53,9 @@ import {
   ChangeEmailRequestBody,
   ChangeAvatarRequestBody,
 } from './specs/user-controller.specs';
-import {PasswordHasher} from '../services/hash.password.bcryptjs';
-import {MailerService} from '../services/mailer-services';
-import {UploadFileService} from '../services/uploadfile-service';
+import { PasswordHasher } from '../services/hash.password.bcryptjs';
+import { MailerService } from '../services/mailer-services';
+import { UploadFileService } from '../services/uploadfile-service';
 
 export class UserController {
   constructor(
@@ -70,13 +70,13 @@ export class UserController {
     public mailerService: MailerService,
     @inject(UploadFileServiceBinding.FILE_SERVICE)
     private fileService: UploadFileService,
-  ) {}
+  ) { }
 
   @post('/users', {
     responses: {
       '200': {
         description: 'User model instance',
-        content: {'application/json': {schema: getModelSchemaRef(User)}},
+        content: { 'application/json': { schema: getModelSchemaRef(User) } },
       },
     },
   })
@@ -84,7 +84,7 @@ export class UserController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(User, {exclude: ['id']}),
+          schema: getModelSchemaRef(User, { exclude: ['id'] }),
         },
       },
     })
@@ -101,7 +101,11 @@ export class UserController {
       // create the new user
       const savedUser = await this.userRepository.create(user);
       delete savedUser.password;
-
+      await this.mailerService.sendMail({
+        to: savedUser.email,
+        subject: 'Sign up successfuly',
+        html: `<p>Congratulations! Your account has been successfully created.</p>`,
+      });
       return savedUser;
     } catch (error) {
       // MongoError 11000 duplicate key
@@ -132,7 +136,7 @@ export class UserController {
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUserProfile: UserProfile,
   ): Promise<UserNamespace.UserProfile> {
-    const {id} = currentUserProfile;
+    const { id } = currentUserProfile;
     const user = await this.userRepository.findById(id);
     return new UserNamespace.UserProfile(user);
   }
@@ -150,12 +154,12 @@ export class UserController {
     currentUserProfile: UserProfile,
     @requestBody(ChangeEmailRequestBody) request: IChangeEmail,
   ): Promise<void> {
-    const {password, email} = request;
-    const {id, email: currentEmail} = currentUserProfile;
+    const { password, email } = request;
+    const { id, email: currentEmail } = currentUserProfile;
     if (!isEqual(currentEmail, email)) {
       // validate email
       validateEmail(request);
-      const existedUser = await this.userRepository.findOne({where: {email}});
+      const existedUser = await this.userRepository.findOne({ where: { email } });
       if (existedUser) {
         throw new HttpErrors.BadRequest('This email is already registered.');
       }
@@ -194,9 +198,9 @@ export class UserController {
     currentUserProfile: UserProfile,
     @requestBody(ChangePasswordRequestBody) request: IChangePassword,
   ): Promise<void> {
-    const {currentPwd, newPwd} = request;
+    const { currentPwd, newPwd } = request;
     validateChangePassword(request);
-    const {id} = currentUserProfile;
+    const { id } = currentUserProfile;
     const user = await this.userRepository.findById(id);
     // verify current password
     const passwordMatched = await this.passwordHasher.comparePassword(
@@ -210,6 +214,11 @@ export class UserController {
     user.password = await this.passwordHasher.hashPassword(newPwd);
     // persitance user info
     await this.userRepository.updateById(id, user);
+    await this.mailerService.sendMail({
+      to: user.email,
+      subject: 'Change password successfully',
+      html: `<p>Your password has been changed successfully</p>`,
+    });
   }
 
   @patch('/users/me/change-avatar', {
@@ -232,7 +241,7 @@ export class UserController {
       const avatar = _get(data, 'files.[0].path');
       if (!isEmpty(avatar)) {
         // process user info
-        const {id} = currentUserProfile;
+        const { id } = currentUserProfile;
         const user = await this.userRepository.findById(id);
         try {
           // remove old avatar
@@ -283,9 +292,9 @@ export class UserController {
     currentUserProfile: UserProfile,
     @requestBody(ChangeProfileRequestBody) req: UserNamespace.UserProfile,
   ): Promise<void> {
-    const {id} = currentUserProfile;
+    const { id } = currentUserProfile;
     const user = await this.userRepository.findById(id);
-    const newUser = {...user, ...req};
+    const newUser = { ...user, ...req };
     await this.userRepository.updateById(id, newUser);
   }
 
@@ -301,7 +310,7 @@ export class UserController {
     email: string;
   }): Promise<void> {
     try {
-      const {email} = request;
+      const { email } = request;
 
       const randomPwd = (length: number) => {
         let result = '';
@@ -316,7 +325,7 @@ export class UserController {
         return result;
       };
 
-      const existedUser = await this.userRepository.findOne({where: {email}});
+      const existedUser = await this.userRepository.findOne({ where: { email } });
 
       if (!existedUser) {
         throw new HttpErrors.BadRequest("This user isn't existed");
@@ -350,8 +359,21 @@ export class UserController {
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUserProfile: UserProfile,
   ): Promise<void> {
-    const {id} = currentUserProfile;
-    await this.userRepository.deleteById(id);
+    try {
+      const { id } = currentUserProfile;
+      const user = await this.userRepository.findById(id);
+      const { email } = user;
+      await this.userRepository.deleteById(id);
+      await this.mailerService.sendMail({
+        to: email,
+        subject: 'Delete account successfully',
+        html: `<p>We are sad that you have stopped using I Feel Good app. Your account has been successfully deleted.</p><p>We hope you come back soon.</p>`,
+      });
+    }
+    catch (error) {
+      throw new HttpErrors.BadRequest(error);
+    }
+
   }
 
   @post('/users/login', {
@@ -368,10 +390,10 @@ export class UserController {
   })
   async login(
     @requestBody(CredentialsRequestBody) credentials: Credentials,
-  ): Promise<{token: string}> {
+  ): Promise<{ token: string }> {
     const user = await this.userService.verifyCredentials(credentials);
     const userProfile = this.userService.convertToUserProfile(user);
     const token = await this.jwtService.generateToken(userProfile);
-    return {token};
+    return { token };
   }
 }
