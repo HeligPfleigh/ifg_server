@@ -361,15 +361,14 @@ export class UserController {
   ): Promise<void> {
     try {
       const { id } = currentUserProfile;
-      const user = await this.userRepository.findOne({ where: { id: id } });
+      const user = await this.userRepository.findById(id);
+      const { email } = user;
       await this.userRepository.deleteById(id);
-      if (user) {
-        await this.mailerService.sendMail({
-          to: user.email,
-          subject: 'Delete account successfully',
-          html: `<p>We are sad that you have stopped using I Feel Good app. Your account has been successfully deleted.</p><p>We hope you come back soon.</p>`,
-        });
-      }
+      await this.mailerService.sendMail({
+        to: email,
+        subject: 'Delete account successfully',
+        html: `<p>We are sad that you have stopped using I Feel Good app. Your account has been successfully deleted.</p><p>We hope you come back soon.</p>`,
+      });
     }
     catch (error) {
       throw new HttpErrors.BadRequest(error);
