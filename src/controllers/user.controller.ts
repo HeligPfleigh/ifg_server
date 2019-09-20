@@ -103,8 +103,8 @@ export class UserController {
       delete savedUser.password;
       await this.mailerService.sendMail({
         to: savedUser.email,
-        subject: 'Sign up successfuly',
-        html: `<p>Congratulations! Your account has been successfully created.</p>`,
+        subject: 'Welcome to I FEEL GOOD',
+        html: `<p>Hello ${savedUser.username}</p><p>Congratulations, your account has just been created ! From now on you are free to assess everything in your life and then make changes to live healthier and happier !</p><p>Have fun with the app and we wish you feel so good every day !  ;-)</p><p>Your I Feel Good team</p>`,
       });
       return savedUser;
     } catch (error) {
@@ -216,8 +216,8 @@ export class UserController {
     await this.userRepository.updateById(id, user);
     await this.mailerService.sendMail({
       to: user.email,
-      subject: 'Change password successfully',
-      html: `<p>Your password has been changed successfully</p>`,
+      subject: 'I FEEL GOOD  Password changed',
+      html: `<p>Hello ${user.username}</p><p>You have just successfully changed your password.</p><p>Have fun with the app and we wish you feel so good every day !  ;-)</p><p>Your I Feel Good team</p>`,
     });
   }
 
@@ -362,12 +362,12 @@ export class UserController {
     try {
       const { id } = currentUserProfile;
       const user = await this.userRepository.findById(id);
-      const { email } = user;
+      const { email, username } = user;
       await this.userRepository.deleteById(id);
       await this.mailerService.sendMail({
         to: email,
-        subject: 'Delete account successfully',
-        html: `<p>We are sad that you have stopped using I Feel Good app. Your account has been successfully deleted.</p><p>We hope you come back soon.</p>`,
+        subject: 'Account deletion',
+        html: `<p>Hello ${username}</p><p>We are sad that you have stopped using I Feel Good app, your account has been successfully deleted.</p><p>Have fun and we wish you to feel so good every day !</p><p>Your I Feel Good team.</p>`,
       });
     }
     catch (error) {
