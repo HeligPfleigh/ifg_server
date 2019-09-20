@@ -183,9 +183,11 @@ export class ActionController {
   async getListReasons(
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUserProfile: UserProfile,
+    @param.query.string('type') evaluationType?: string,
   ): Promise<{ reasons: string[]; }> {
     const { id } = currentUserProfile;
-    const evaluations = await this.evaluationRepository.find({ where: { userId: { like: id } } });
+    const filter = { userId: { like: id }, evaluationType };
+    const evaluations = await this.evaluationRepository.find({ where: filter });
     const reasons = [];
     for (const evaluation of evaluations) {
       if (evaluation.influentFactor) {
