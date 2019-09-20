@@ -81,6 +81,11 @@ export class User extends Entity {
   })
   isAdmin?: boolean
 
+  @property({
+    type: 'string',
+  })
+  resetPasswordToken?: string
+
   constructor(data?: Partial<User>) {
     super(data);
   }
