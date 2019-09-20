@@ -86,8 +86,8 @@ export class FeedbackController {
     });
     await this.mailerService.sendMail({
       to: email,
-      subject: `Feedback sent successfully`,
-      html: `<p>Your feedback has been sent to the administrator. We will reply as soon as possible.</p>`,
+      subject: `I FEEL GOOD Your message has come to us`,
+      html: `<p>Hello ${username}</p><p>We appreciate the fact that you took time to write a message and we are doing our best efforts to reply you as soon as possible.</p><p>Have fun with the app and we wish you to feel so good every day !</p><p>Your I Feel Good team</p>`,
     });
     const newFeedback = { ...feedback, userId: id };
     return this.feedbackRepository.create(newFeedback);
