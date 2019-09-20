@@ -10,6 +10,7 @@ import {
   Request,
   Response,
   RestBindings,
+  param,
 } from '@loopback/rest';
 import {
   TokenService,
@@ -52,6 +53,7 @@ import {
   ForgotPasswordRequestBody,
   ChangeEmailRequestBody,
   ChangeAvatarRequestBody,
+  ResetPasswordRequestBody,
 } from './specs/user-controller.specs';
 import { PasswordHasher } from '../services/hash.password.bcryptjs';
 import { MailerService } from '../services/mailer-services';
@@ -104,7 +106,19 @@ export class UserController {
       await this.mailerService.sendMail({
         to: savedUser.email,
         subject: 'Welcome to I FEEL GOOD',
-        html: `<p>Hello ${savedUser.username}</p><p>Congratulations, your account has just been created ! From now on you are free to assess everything in your life and then make changes to live healthier and happier !</p><p>Have fun with the app and we wish you feel so good every day !  ;-)</p><p>Your I Feel Good team</p>`,
+        html: `
+            <p>Hello ${savedUser.username}</p>
+            <p>Congratulations, your account has just been created ! From now on you are free to assess everything in your life and then make changes to live healthier and happier !</p>
+            <p>Have fun with the app and we wish you feel so good every day !  ;-)</p>
+            <p>Your I Feel Good team</p>
+            <br />
+            <hr />
+            <br />
+            <p>Bonjour ${savedUser.username}</p>
+            <p>Félicitations, ton compte vient juste d'être crée ! A partir de maintenant tu est libre d'évaluer tout sur ta vie et puis effectuer des changements afin de vivre en meilleure santé et plus heureux-se.</p>
+            <p>Amuse-toi bien avec l'appli et on te souhaite de te sentir tellement bien chaque jour !  ;-)</p>
+            <p>Ton équipe I Feel Good</p>
+          `,
       });
       return savedUser;
     } catch (error) {
@@ -176,11 +190,42 @@ export class UserController {
       user.email = email;
       // save user info into database
       await this.userRepository.updateById(id, user);
+      // notice to old email
+      await this.mailerService.sendMail({
+        to: currentEmail,
+        subject: 'New E-mail used - Nouvel E-mail utilisé',
+        html: `
+          <p>Hello ${user.username},</p>
+          <p>From now on this E-mail address is no more your new E-mail used to log into the I Feel Good account.</p>
+          <p>See you soon and we wish you to feel so good everyday !  ;-)</p>
+          <p>Your I Feel Good app team,</p>
+          <br/>
+          <hr/>
+          <br/>
+          <p>Bonjour ${user.username},</p>
+          <p>Désormais cette adresse E-mail n'est plus ton E-mail utilisé pour accéder à ton compte I Feel Good.</p>
+          <p>A bientôt et on te souhaite de te sentir tellement bien chaque jour !  ;-)</p>
+          <p>Ton équipe I Feel Good,</p>
+        `,
+      });
+
       // notice action into user via new email
       await this.mailerService.sendMail({
         to: email,
-        subject: 'Change email successfuly',
-        html: `<p>Your request to change email is processed. This is your new email: ${email}</p>`,
+        subject: 'New E-mail used - Nouvel E-mail utilisé',
+        html: `
+          <p>Hello ${user.username},</p>
+          <p>From now on this E-mail address: ${email} is your new E-mail used to log into the I Feel Good account.</p>
+          <p>Have fun with the app and we wish you to feel so good everyday !  ;-)</p>
+          <p>Your I Feel Good app team,</p>
+          <br/>
+          <hr/>
+          <br/>
+          <p>Bonjour ${user.username},</p>
+          <p>Désormais cette adresse E-mail est ton E-mail utilisé pour accéder à ton compte I Feel Good.</p>
+          <p>Amuse-toi bien avec l'appli et on te souhaite de te sentir tellement bien chaque jour !  ;-)</p>
+          <p>Ton équipe I Feel Good,</p>
+        `,
       });
     }
   }
@@ -217,7 +262,19 @@ export class UserController {
     await this.mailerService.sendMail({
       to: user.email,
       subject: 'I FEEL GOOD  Password changed',
-      html: `<p>Hello ${user.username}</p><p>You have just successfully changed your password.</p><p>Have fun with the app and we wish you feel so good every day !  ;-)</p><p>Your I Feel Good team</p>`,
+      html: `
+        <p>Hello ${user.username}</p>
+        <p>You have just successfully changed your password.</p>
+        <p>Have fun with the app and we wish you feel so good every day !  ;-)</p>
+        <p>Your I Feel Good team</p>
+        <br/>
+        <hr/>
+        <br/>
+        <p>Bonjour ${user.username}</p>
+        <p>Tu viens juste de changer ton mot de passe avec succès.</p>
+        <p>Amuse-toi bien avec l'appli et on te souhaite de te sentir tellement bien chaque jour !  ;-)</p>
+        <p>Ton équipe I Feel Good</p>
+      `,
     });
   }
 
@@ -331,16 +388,32 @@ export class UserController {
         throw new HttpErrors.BadRequest("This user isn't existed");
       }
 
-      const newPwd = randomPwd(16);
+      const resetPasswordToken = randomPwd(32);
 
-      existedUser.password = await this.passwordHasher.hashPassword(newPwd);
-
-      await this.userRepository.updateById(existedUser.id, existedUser);
+      await this.userRepository.updateById(existedUser.id, { resetPasswordToken });
 
       await this.mailerService.sendMail({
         to: email,
-        subject: 'Reset password',
-        html: `<p>Your request to reset password is processed. This is your new password: ${newPwd}</p>`,
+        subject: 'I FEEL GOOD  Password reset - Réinitialisation du mot de passe',
+        html: `
+          <div>
+            <p>Hello ${existedUser.username},</p>
+            <p>Have you forgot your password ? No problem, just click on the link below to reset.</p>
+            <a href="https://api.ifeelgood.mttjsc.com/resetpassword/`+ resetPasswordToken + `">Reset password</a>
+            <p>Have fun with the app and we wish you feel so good every day !  ;-)</p>
+            <br />
+            <p>Your I Feel Good team</p>
+            <br />
+            <hr />
+            <br />
+            <p>Bonjour ${existedUser.username},</p>
+            <p>Tu as oublié ton mot de passe ? Aucun souci, tu as juste besoin de cliquer sur le lien ci-dessous pour créer un nouveau mot de passe.</p>
+            <a href="https://api.ifeelgood.mttjsc.com/resetpassword/`+ resetPasswordToken + `">Reset password</a>
+            <p>Amuse-toi bien avec l'appli et on te souhaite de te sentir tellement bien chaque jour !  ;-)</p>
+            <br />
+            <p>Ton équipe I Feel Good</p>
+          <div>
+        `,
       });
     } catch (error) {
       throw new HttpErrors.BadRequest(error);
@@ -367,7 +440,19 @@ export class UserController {
       await this.mailerService.sendMail({
         to: email,
         subject: 'Account deletion',
-        html: `<p>Hello ${username}</p><p>We are sad that you have stopped using I Feel Good app, your account has been successfully deleted.</p><p>Have fun and we wish you to feel so good every day !</p><p>Your I Feel Good team.</p>`,
+        html: `
+            <p>Hello ${username}</p>
+            <p>We are sad that you have stopped using I Feel Good app, your account has been successfully deleted.</p>
+            <p>Have fun and we wish you to feel so good every day !</p>
+            <p>Your I Feel Good team.</p>
+            <br/>
+            <hr/>
+            <br/>
+            <p>Bonjour ${username}</p>
+            <p>Nous sommes tristes de voir que tu n'utilises plus l'appli I Feel Good, ton compte a été supprimé avec succès.</p>
+            <p>Amuse-toi bien et on te souhaite de te sentir tellement bien chaque jour !</p>
+            <p>Ton équipe I Feel Good</p>
+          `,
       });
     }
     catch (error) {
@@ -395,5 +480,34 @@ export class UserController {
     const userProfile = this.userService.convertToUserProfile(user);
     const token = await this.jwtService.generateToken(userProfile);
     return { token };
+  }
+
+  @patch('/users/resetpwd/{resetPasswordToken}', {
+    responses: {
+      '204': {
+        description: 'Forgot password',
+      },
+    },
+  })
+  async resetPassword(
+    @param.path.string('resetPasswordToken') resetPasswordToken: string,
+    @requestBody(ResetPasswordRequestBody) req: { password: string; confirmPwd: string; }
+  ) {
+    const { password, confirmPwd } = req;
+    if (password !== confirmPwd) {
+      throw new HttpErrors.BadRequest('Password isn\'t matched!')
+    }
+    console.log(password, confirmPwd)
+
+    const user = await this.userRepository.findOne({ where: { resetPasswordToken } });
+
+    if (!user) {
+      throw new HttpErrors.NotFound('User isn\'t found!')
+    }
+
+    user.password = await this.passwordHasher.hashPassword(password);
+    user.resetPasswordToken = undefined;
+
+    await this.userRepository.updateById(user.id, user);
   }
 }

@@ -1,17 +1,12 @@
 import { IfgServerApplication } from './application';
+import { ExpressServer } from './server';
 import { ApplicationConfig } from '@loopback/core';
 
-export { IfgServerApplication };
+export { ExpressServer, IfgServerApplication };
 
 export async function main(options: ApplicationConfig = {}) {
-  const app = new IfgServerApplication(options);
-  await app.boot();
-  await app.migrateSchema();
-  await app.start();
-
-  const url = app.restServer.url;
-  console.log(`Server is running at ${url}`);
-  console.log(`Try ${url}/ping`);
-
-  return app;
+  const server = new ExpressServer(options);
+  await server.boot();
+  await server.start();
+  console.log('Server is running at http://127.0.0.1:3000');
 }

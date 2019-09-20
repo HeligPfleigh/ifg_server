@@ -125,7 +125,7 @@ export const ChangeAvatarRequestBody = {
     'multipart/form-data': {
       // Skip body parsing
       'x-parser': 'stream',
-      schema: {type: 'object'},
+      schema: { type: 'object' },
     },
   },
 };
@@ -143,6 +143,23 @@ export const ForgotPasswordRequestBody = {
   required: true,
   content: {
     'application/json': { schema: ForgotPasswordSchema },
+  },
+};
+
+export const ResetPasswordRequestBody = {
+  description: 'The input of reset password function',
+  required: true,
+  content: {
+    'application/json': {
+      schema: {
+        type: 'object',
+        required: ['password', 'confirmPwd'],
+        properties: {
+          password: { type: 'string' },
+          confirmPwd: { type: 'string' },
+        },
+      },
+    },
   },
 };
 
