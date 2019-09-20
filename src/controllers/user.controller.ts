@@ -170,7 +170,7 @@ export class UserController {
         user.password,
       );
       if (!passwordMatched) {
-        throw new HttpErrors.BadRequest('Current password mismatch.');
+        throw new HttpErrors.Unauthorized('Current password mismatch.');
       }
       // pass all rules will set new email
       user.email = email;
