@@ -105,7 +105,7 @@ export class UserController {
       delete savedUser.password;
       await this.mailerService.sendMail({
         to: savedUser.email,
-        subject: 'Welcome to I FEEL GOOD',
+        subject: 'Welcome to I FEEL GOOD - Bienvenue sur I FEEL GOOD',
         html: `
             <p>Hello ${savedUser.username}</p>
             <p>Congratulations, your account has just been created ! From now on you are free to assess everything in your life and then make changes to live healthier and happier !</p>
@@ -186,10 +186,6 @@ export class UserController {
       if (!passwordMatched) {
         throw new HttpErrors.Unauthorized('Current password mismatch.');
       }
-      // pass all rules will set new email
-      user.email = email;
-      // save user info into database
-      await this.userRepository.updateById(id, user);
       // notice to old email
       await this.mailerService.sendMail({
         to: currentEmail,
@@ -227,6 +223,11 @@ export class UserController {
           <p>Ton équipe I Feel Good,</p>
         `,
       });
+
+      // pass all rules will set new email
+      user.email = email;
+      // save user info into database
+      await this.userRepository.updateById(id, user);
     }
   }
 
@@ -261,7 +262,7 @@ export class UserController {
     await this.userRepository.updateById(id, user);
     await this.mailerService.sendMail({
       to: user.email,
-      subject: 'I FEEL GOOD  Password changed',
+      subject: 'I FEEL GOOD  Password changed - Mot de passe modifié',
       html: `
         <p>Hello ${user.username}</p>
         <p>You have just successfully changed your password.</p>
@@ -439,7 +440,7 @@ export class UserController {
       await this.userRepository.deleteById(id);
       await this.mailerService.sendMail({
         to: email,
-        subject: 'Account deletion',
+        subject: 'Account deletion - Suppression de compte',
         html: `
             <p>Hello ${username}</p>
             <p>We are sad that you have stopped using I Feel Good app, your account has been successfully deleted.</p>

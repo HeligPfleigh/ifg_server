@@ -86,7 +86,7 @@ export class FeedbackController {
     });
     await this.mailerService.sendMail({
       to: email,
-      subject: `I FEEL GOOD Your message has come to us`,
+      subject: `I FEEL GOOD Your message has come to us - Ton message nous a été parvenu`,
       html: `
         <p>Hello ${username}</p>
         <p>We appreciate the fact that you took time to write a message and we are doing our best efforts to reply you as soon as possible.</p>
