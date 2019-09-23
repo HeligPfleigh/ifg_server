@@ -485,8 +485,18 @@ export class UserController {
 
   @patch('/users/resetpwd/{resetPasswordToken}', {
     responses: {
-      '204': {
+      '200': {
         description: 'Forgot password',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                email: { type: 'string' },
+              },
+            },
+          },
+        },
       },
     },
   })
@@ -498,7 +508,6 @@ export class UserController {
     if (password !== confirmPwd) {
       throw new HttpErrors.BadRequest('Password isn\'t matched!')
     }
-    console.log(password, confirmPwd)
 
     const user = await this.userRepository.findOne({ where: { resetPasswordToken } });
 
@@ -510,5 +519,7 @@ export class UserController {
     user.resetPasswordToken = undefined;
 
     await this.userRepository.updateById(user.id, user);
+
+    return { email: user.email };
   }
 }
