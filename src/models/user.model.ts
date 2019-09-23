@@ -52,21 +52,25 @@ export class User extends Entity {
 
   @property({
     type: 'date',
+    default: 0,
   })
   DOB?: Date;
 
   @property({
     type: 'number',
+    default: 0,
   })
   height?: number;
 
   @property({
     type: 'number',
+    default: 0,
   })
   weight?: number;
 
   @property({
     type: 'string',
+    default: 'MALE',
   })
   gender?: string;
 
