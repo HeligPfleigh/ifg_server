@@ -43,6 +43,7 @@ import {
   validateCredentials,
   validateChangePassword,
   validateEmail,
+  validateIsAdminEmail,
 } from '../services/validator';
 import {
   UserTokenSchema,
@@ -94,6 +95,8 @@ export class UserController {
   ): Promise<User> {
     // ensure a valid email value and password value
     validateCredentials(pick(user, ['email', 'password', 'username']));
+
+    validateIsAdminEmail(user.email);
 
     // encrypt the password
     // eslint-disable-next-line require-atomic-updates
@@ -173,6 +176,8 @@ export class UserController {
     if (!isEqual(currentEmail, email)) {
       // validate email
       validateEmail(request);
+      validateIsAdminEmail(currentEmail || '');
+      validateIsAdminEmail(email);
       const existedUser = await this.userRepository.findOne({ where: { email } });
       if (existedUser) {
         throw new HttpErrors.BadRequest('This email is already registered.');
@@ -437,6 +442,7 @@ export class UserController {
       const { id } = currentUserProfile;
       const user = await this.userRepository.findById(id);
       const { email, username } = user;
+      validateIsAdminEmail(email);
       await this.userRepository.deleteById(id);
       await this.mailerService.sendMail({
         to: email,

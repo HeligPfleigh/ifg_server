@@ -70,3 +70,11 @@ export function validateEvaluationType(type: string) {
     throw new HttpErrors.BadRequest("The evaluation type isn't existed");
   }
 }
+
+const listAdminEmail = ['ifeelgood.hello@gmail.com']
+
+export function validateIsAdminEmail(email: string) {
+  if (listAdminEmail.find(adminEmail => email.toLowerCase() === adminEmail)) {
+    throw new HttpErrors.UnavailableForLegalReasons("You don't have permission to perform this actions");
+  }
+}

@@ -27,6 +27,7 @@ export class ExpressServer {
   async start() {
     const port = this.lbApp.restServer.config.port || 3000;
     const host = this.lbApp.restServer.config.host || '127.0.0.1';
+    await this.lbApp.migrateSchema();
     const server = this.app.listen(port, host);
     await pEvent(server, 'listening');
   }
