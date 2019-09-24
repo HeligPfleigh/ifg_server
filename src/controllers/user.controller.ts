@@ -172,7 +172,9 @@ export class UserController {
     @requestBody(ChangeEmailRequestBody) request: IChangeEmail,
   ): Promise<void> {
     const { password, email } = request;
-    const { id, email: currentEmail } = currentUserProfile;
+    const { id } = currentUserProfile;
+    const currentUser = await this.userRepository.findById(id);
+    const currentEmail = currentUser ? currentUser.email : undefined;
     if (!isEqual(currentEmail, email)) {
       // validate email
       validateEmail(request);
