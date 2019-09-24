@@ -27,7 +27,7 @@ import {
 import {JWTService} from './services/jwt-services';
 import {BcryptHasher} from './services/hash.password.bcryptjs';
 import {MyUserService} from './services/user-services';
-import {MailerService} from './services/mailer-services';
+import MailerService from './services/mailer-services';
 import {UserRepository} from './repositories';
 import {NotificationService} from './services/notification-services';
 import {UploadFileService} from './services/uploadfile-service';

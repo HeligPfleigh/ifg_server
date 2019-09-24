@@ -23,13 +23,13 @@ import {
   UserProfile,
   authenticate,
 } from '@loopback/authentication';
-import { inject } from '@loopback/core';
-import { Feedback } from '../models';
-import { PasswordHasherBindings, MailServiceBindings } from '../keys';
-import { FeedbackRepository, UserRepository } from '../repositories';
-import { FeedbackSchema } from './specs/feedback-controller.specs';
-import { MailerService } from '../services/mailer-services';
-import { PasswordHasher } from '../services/hash.password.bcryptjs';
+import {inject} from '@loopback/core';
+import {Feedback} from '../models';
+import {PasswordHasherBindings, MailServiceBindings} from '../keys';
+import {FeedbackRepository, UserRepository} from '../repositories';
+import {FeedbackSchema} from './specs/feedback-controller.specs';
+import MailerService from '../services/mailer-services';
+import {PasswordHasher} from '../services/hash.password.bcryptjs';
 
 export class FeedbackController {
   constructor(
@@ -41,13 +41,13 @@ export class FeedbackController {
     public passwordHasher: PasswordHasher,
     @inject(MailServiceBindings.MAIL_SERVICE)
     public mailerService: MailerService,
-  ) { }
+  ) {}
 
   @post('/feedbacks', {
     responses: {
       '200': {
         description: 'Feedback model instance',
-        content: { 'application/json': { schema: getModelSchemaRef(Feedback) } },
+        content: {'application/json': {schema: getModelSchemaRef(Feedback)}},
       },
     },
   })
@@ -60,13 +60,13 @@ export class FeedbackController {
         },
       },
     })
-    request: { message: string; subject: string; password?: string },
+    request: {message: string; subject: string; password?: string},
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUserProfile: UserProfile,
   ): Promise<Feedback> {
-    const { id } = currentUserProfile;
+    const {id} = currentUserProfile;
     const user = await this.userRepository.findById(id);
-    const { username, email } = user;
+    const {username, email} = user;
     // verify current password
     const password = getValue(request, 'password', '');
     if (!isEmpty(password)) {
@@ -101,7 +101,7 @@ export class FeedbackController {
         <p>Ton équipe I Feel Good </p>
       `,
     });
-    const newFeedback = { ...feedback, userId: id };
+    const newFeedback = {...feedback, userId: id};
     return this.feedbackRepository.create(newFeedback);
   }
 
@@ -109,7 +109,7 @@ export class FeedbackController {
     responses: {
       '200': {
         description: 'Feedback model count',
-        content: { 'application/json': { schema: CountSchema } },
+        content: {'application/json': {schema: CountSchema}},
       },
     },
   })
@@ -126,7 +126,7 @@ export class FeedbackController {
         description: 'Array of Feedback model instances',
         content: {
           'application/json': {
-            schema: { type: 'array', items: getModelSchemaRef(Feedback) },
+            schema: {type: 'array', items: getModelSchemaRef(Feedback)},
           },
         },
       },
@@ -143,7 +143,7 @@ export class FeedbackController {
     responses: {
       '200': {
         description: 'Feedback model instance',
-        content: { 'application/json': { schema: getModelSchemaRef(Feedback) } },
+        content: {'application/json': {schema: getModelSchemaRef(Feedback)}},
       },
     },
   })

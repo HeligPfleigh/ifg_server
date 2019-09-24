@@ -1,4 +1,4 @@
-import { repository } from '@loopback/repository';
+import {repository} from '@loopback/repository';
 import {
   post,
   get,
@@ -19,13 +19,13 @@ import {
   AuthenticationBindings,
   UserProfile,
 } from '@loopback/authentication';
-import { inject } from '@loopback/core';
+import {inject} from '@loopback/core';
 import _get from 'lodash/get';
 import pick from 'lodash/pick';
 import isEmpty from 'lodash/isEmpty';
 import isEqual from 'lodash/isEqual';
-import { existsSync, unlinkSync } from 'fs';
-import { User } from '../models';
+import {existsSync, unlinkSync} from 'fs';
+import {User} from '../models';
 import {
   UserRepository,
   Credentials,
@@ -56,9 +56,9 @@ import {
   ChangeAvatarRequestBody,
   ResetPasswordRequestBody,
 } from './specs/user-controller.specs';
-import { PasswordHasher } from '../services/hash.password.bcryptjs';
-import { MailerService } from '../services/mailer-services';
-import { UploadFileService } from '../services/uploadfile-service';
+import MailerService from '../services/mailer-services';
+import {PasswordHasher} from '../services/hash.password.bcryptjs';
+import {UploadFileService} from '../services/uploadfile-service';
 
 export class UserController {
   constructor(
@@ -73,13 +73,13 @@ export class UserController {
     public mailerService: MailerService,
     @inject(UploadFileServiceBinding.FILE_SERVICE)
     private fileService: UploadFileService,
-  ) { }
+  ) {}
 
   @post('/users', {
     responses: {
       '200': {
         description: 'User model instance',
-        content: { 'application/json': { schema: getModelSchemaRef(User) } },
+        content: {'application/json': {schema: getModelSchemaRef(User)}},
       },
     },
   })
@@ -87,7 +87,7 @@ export class UserController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(User, { exclude: ['id'] }),
+          schema: getModelSchemaRef(User, {exclude: ['id']}),
         },
       },
     })
@@ -153,7 +153,7 @@ export class UserController {
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUserProfile: UserProfile,
   ): Promise<UserNamespace.UserProfile> {
-    const { id } = currentUserProfile;
+    const {id} = currentUserProfile;
     const user = await this.userRepository.findById(id);
     return new UserNamespace.UserProfile(user);
   }
@@ -171,8 +171,8 @@ export class UserController {
     currentUserProfile: UserProfile,
     @requestBody(ChangeEmailRequestBody) request: IChangeEmail,
   ): Promise<void> {
-    const { password, email } = request;
-    const { id } = currentUserProfile;
+    const {password, email} = request;
+    const {id} = currentUserProfile;
     const currentUser = await this.userRepository.findById(id);
     const currentEmail = currentUser ? currentUser.email : undefined;
     if (!isEqual(currentEmail, email)) {
@@ -180,7 +180,7 @@ export class UserController {
       validateEmail(request);
       validateIsAdminEmail(currentEmail || '');
       validateIsAdminEmail(email);
-      const existedUser = await this.userRepository.findOne({ where: { email } });
+      const existedUser = await this.userRepository.findOne({where: {email}});
       if (existedUser) {
         throw new HttpErrors.BadRequest('This email is already registered.');
       }
@@ -251,9 +251,9 @@ export class UserController {
     currentUserProfile: UserProfile,
     @requestBody(ChangePasswordRequestBody) request: IChangePassword,
   ): Promise<void> {
-    const { currentPwd, newPwd } = request;
+    const {currentPwd, newPwd} = request;
     validateChangePassword(request);
-    const { id } = currentUserProfile;
+    const {id} = currentUserProfile;
     const user = await this.userRepository.findById(id);
     // verify current password
     const passwordMatched = await this.passwordHasher.comparePassword(
@@ -306,7 +306,7 @@ export class UserController {
       const avatar = _get(data, 'files.[0].path');
       if (!isEmpty(avatar)) {
         // process user info
-        const { id } = currentUserProfile;
+        const {id} = currentUserProfile;
         const user = await this.userRepository.findById(id);
         try {
           // remove old avatar
@@ -357,9 +357,9 @@ export class UserController {
     currentUserProfile: UserProfile,
     @requestBody(ChangeProfileRequestBody) req: UserNamespace.UserProfile,
   ): Promise<void> {
-    const { id } = currentUserProfile;
+    const {id} = currentUserProfile;
     const user = await this.userRepository.findById(id);
-    const newUser = { ...user, ...req };
+    const newUser = {...user, ...req};
     await this.userRepository.updateById(id, newUser);
   }
 
@@ -375,7 +375,7 @@ export class UserController {
     email: string;
   }): Promise<void> {
     try {
-      const { email } = request;
+      const {email} = request;
 
       const randomPwd = (length: number) => {
         let result = '';
@@ -390,7 +390,7 @@ export class UserController {
         return result;
       };
 
-      const existedUser = await this.userRepository.findOne({ where: { email } });
+      const existedUser = await this.userRepository.findOne({where: {email}});
 
       if (!existedUser) {
         throw new HttpErrors.BadRequest("This user isn't existed");
@@ -398,16 +398,22 @@ export class UserController {
 
       const resetPasswordToken = randomPwd(32);
 
-      await this.userRepository.updateById(existedUser.id, { resetPasswordToken });
+      await this.userRepository.updateById(existedUser.id, {
+        resetPasswordToken,
+      });
 
       await this.mailerService.sendMail({
         to: email,
-        subject: 'I FEEL GOOD  Password reset - Réinitialisation du mot de passe',
-        html: `
+        subject:
+          'I FEEL GOOD  Password reset - Réinitialisation du mot de passe',
+        html:
+          `
           <div>
             <p>Hello ${existedUser.username},</p>
             <p>Have you forgot your password ? No problem, just click on the link below to reset.</p>
-            <a href="https://api.ifeelgood.mttjsc.com/resetpassword/`+ resetPasswordToken + `">Reset password</a>
+            <a href="https://api.ifeelgood.mttjsc.com/resetpassword/` +
+          resetPasswordToken +
+          `">Reset password</a>
             <p>Have fun with the app and we wish you feel so good every day !  ;-)</p>
             <br />
             <p>Your I Feel Good team</p>
@@ -416,7 +422,9 @@ export class UserController {
             <br />
             <p>Bonjour ${existedUser.username},</p>
             <p>Tu as oublié ton mot de passe ? Aucun souci, tu as juste besoin de cliquer sur le lien ci-dessous pour créer un nouveau mot de passe.</p>
-            <a href="https://api.ifeelgood.mttjsc.com/resetpassword/`+ resetPasswordToken + `">Reset password</a>
+            <a href="https://api.ifeelgood.mttjsc.com/resetpassword/` +
+          resetPasswordToken +
+          `">Reset password</a>
             <p>Amuse-toi bien avec l'appli et on te souhaite de te sentir tellement bien chaque jour !  ;-)</p>
             <br />
             <p>Ton équipe I Feel Good</p>
@@ -441,9 +449,9 @@ export class UserController {
     currentUserProfile: UserProfile,
   ): Promise<void> {
     try {
-      const { id } = currentUserProfile;
+      const {id} = currentUserProfile;
       const user = await this.userRepository.findById(id);
-      const { email, username } = user;
+      const {email, username} = user;
       validateIsAdminEmail(email);
       await this.userRepository.deleteById(id);
       await this.mailerService.sendMail({
@@ -463,11 +471,9 @@ export class UserController {
             <p>Ton équipe I Feel Good</p>
           `,
       });
-    }
-    catch (error) {
+    } catch (error) {
       throw new HttpErrors.BadRequest(error);
     }
-
   }
 
   @post('/users/login', {
@@ -484,11 +490,11 @@ export class UserController {
   })
   async login(
     @requestBody(CredentialsRequestBody) credentials: Credentials,
-  ): Promise<{ token: string }> {
+  ): Promise<{token: string}> {
     const user = await this.userService.verifyCredentials(credentials);
     const userProfile = this.userService.convertToUserProfile(user);
     const token = await this.jwtService.generateToken(userProfile);
-    return { token };
+    return {token};
   }
 
   @patch('/users/resetpwd/{resetPasswordToken}', {
@@ -500,7 +506,7 @@ export class UserController {
             schema: {
               type: 'object',
               properties: {
-                email: { type: 'string' },
+                email: {type: 'string'},
               },
             },
           },
@@ -510,17 +516,20 @@ export class UserController {
   })
   async resetPassword(
     @param.path.string('resetPasswordToken') resetPasswordToken: string,
-    @requestBody(ResetPasswordRequestBody) req: { password: string; confirmPwd: string; }
+    @requestBody(ResetPasswordRequestBody)
+    req: {password: string; confirmPwd: string},
   ) {
-    const { password, confirmPwd } = req;
+    const {password, confirmPwd} = req;
     if (password !== confirmPwd) {
-      throw new HttpErrors.BadRequest('Password isn\'t matched!')
+      throw new HttpErrors.BadRequest("Password isn't matched!");
     }
 
-    const user = await this.userRepository.findOne({ where: { resetPasswordToken } });
+    const user = await this.userRepository.findOne({
+      where: {resetPasswordToken},
+    });
 
     if (!user) {
-      throw new HttpErrors.NotFound('User isn\'t found!')
+      throw new HttpErrors.NotFound("User isn't found!");
     }
 
     user.password = await this.passwordHasher.hashPassword(password);
@@ -528,6 +537,6 @@ export class UserController {
 
     await this.userRepository.updateById(user.id, user);
 
-    return { email: user.email };
+    return {email: user.email};
   }
 }

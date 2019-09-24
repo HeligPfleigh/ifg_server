@@ -5,7 +5,7 @@ import {BindingKey} from '@loopback/context';
 import {TokenService, UserService} from '@loopback/authentication';
 import {User} from './models';
 import {Credentials} from './repositories';
-import {MailerService} from './services/mailer-services';
+import MailerService from './services/mailer-services';
 import {PasswordHasher} from './services/hash.password.bcryptjs';
 import {NotificationService} from './services/notification-services';
 import {UploadFileService} from './services/uploadfile-service';

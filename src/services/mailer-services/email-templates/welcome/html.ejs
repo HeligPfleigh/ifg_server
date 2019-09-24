@@ -1,0 +1,34 @@
+<style type="text/css">
+  .email-block {
+    margin: 15px auto;
+    width: 80%;
+    background-color: #f8fafd;
+    border: 1px solid #e4e4e4;
+    font-size: 18px;
+  }
+  .email-content {
+    padding: 15px;
+  }
+  .email-content > div {
+    margin-bottom: 10px;
+  }
+  .email-footer {
+    padding: 15px;
+    background-color: #f4f4f5;
+    color: grey;
+    text-align: right;
+    font-weight: bold;
+  }
+</style>
+
+<div class="email-block">
+  <div class="email-content">
+    <div><%= t('Hello') %> <strong>User</strong>,</div>
+    <br />
+    <div><%= t('Thank you for signing up for I Feel Good!') %></div>
+    <div><%= t('Your account active successfully.') %></div>
+    <br />
+    <div><%= t('Thank you!') %></div>
+  </div>
+  <div class="email-footer">MTT Team</div>
+</div>
