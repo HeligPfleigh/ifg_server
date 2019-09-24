@@ -157,6 +157,7 @@ export class ActionController {
     const { actions } = req;
     await this.actionRepository.deleteAll({
       userId: { like: id },
+      status: ActionStatus.ONGOING,
       or: actions.map(act => ({ id: act }))
     })
   }
