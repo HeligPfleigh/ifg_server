@@ -1,7 +1,4 @@
 import {
-  repository,
-} from '@loopback/repository';
-import {
   post,
   param,
   get,
@@ -11,12 +8,20 @@ import {
   requestBody,
   HttpErrors,
 } from '@loopback/rest';
-import { Action } from '../models';
-import { ActionRepository, EvaluationRepository } from '../repositories';
-import { ActionRequestBody, ActionsRequestBody } from './specs/action-controller.specs';
-import { authenticate, AuthenticationBindings, UserProfile } from '@loopback/authentication';
-import { inject } from '@loopback/core';
-import { ActionStatus } from '../services/enum';
+import {
+  authenticate,
+  AuthenticationBindings,
+  UserProfile,
+} from '@loopback/authentication';
+import {inject} from '@loopback/core';
+import {repository} from '@loopback/repository';
+import {Action} from '../models';
+import {ActionRepository, EvaluationRepository} from '../repositories';
+import {
+  ActionRequestBody,
+  ActionsRequestBody,
+} from './specs/action-controller.specs';
+import {ActionStatus} from '../services/enum';
 
 export class ActionController {
   constructor(
@@ -24,13 +29,13 @@ export class ActionController {
     public actionRepository: ActionRepository,
     @repository(EvaluationRepository)
     public evaluationRepository: EvaluationRepository,
-  ) { }
+  ) {}
 
   @post('/actions', {
     responses: {
       '200': {
         description: 'Action model instance',
-        content: { 'application/json': { schema: getModelSchemaRef(Action) } },
+        content: {'application/json': {schema: getModelSchemaRef(Action)}},
       },
     },
   })
@@ -41,8 +46,8 @@ export class ActionController {
     @requestBody(ActionRequestBody)
     action: Omit<Action, 'id'>,
   ): Promise<Action> {
-    const { id } = currentUserProfile;
-    const newAction = { ...action, userId: id, status: ActionStatus.ONGOING };
+    const {id} = currentUserProfile;
+    const newAction = {...action, userId: id, status: ActionStatus.ONGOING};
     return this.actionRepository.create(newAction);
   }
 
@@ -52,7 +57,7 @@ export class ActionController {
         description: 'Array of Action model instances by status',
         content: {
           'application/json': {
-            schema: { type: 'array', items: getModelSchemaRef(Action) },
+            schema: {type: 'array', items: getModelSchemaRef(Action)},
           },
         },
       },
@@ -64,8 +69,8 @@ export class ActionController {
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUserProfile: UserProfile,
   ): Promise<Action[]> {
-    const { id } = currentUserProfile;
-    return this.actionRepository.find({ where: { status, userId: { like: id } } });
+    const {id} = currentUserProfile;
+    return this.actionRepository.find({where: {status, userId: {like: id}}});
   }
 
   @patch('/actions/{id}', {
@@ -81,17 +86,19 @@ export class ActionController {
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUserProfile: UserProfile,
     @requestBody(ActionRequestBody)
-    req: { action: string },
+    req: {action: string},
   ): Promise<void> {
     const userId = currentUserProfile.id;
-    const { action } = req;
+    const {action} = req;
     const shouldUpdateAction = await this.actionRepository.findOne({
-      where: { userId: { like: userId }, id },
+      where: {userId: {like: userId}, id},
     });
     if (!shouldUpdateAction) {
-      throw new HttpErrors.BadRequest('Action isn\'t existed or isn\'t owned by yourself!');
+      throw new HttpErrors.BadRequest(
+        "Action isn't existed or isn't owned by yourself!",
+      );
     }
-    await this.actionRepository.updateById(id, { action });
+    await this.actionRepository.updateById(id, {action});
   }
 
   @del('/actions/{id}', {
@@ -109,10 +116,12 @@ export class ActionController {
   ): Promise<void> {
     const userId = currentUserProfile.id;
     const shouldUpdateAction = await this.actionRepository.findOne({
-      where: { userId: { like: userId }, id },
+      where: {userId: {like: userId}, id},
     });
     if (!shouldUpdateAction) {
-      throw new HttpErrors.BadRequest('Action isn\'t existed or isn\'t owned by yourself!');
+      throw new HttpErrors.BadRequest(
+        "Action isn't existed or isn't owned by yourself!",
+      );
     }
     await this.actionRepository.deleteById(id);
   }
@@ -129,14 +138,17 @@ export class ActionController {
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUserProfile: UserProfile,
     @requestBody(ActionsRequestBody)
-    req: { actions: string[] },
+    req: {actions: string[]},
   ): Promise<void> {
-    const { id } = currentUserProfile;
-    const { actions } = req;
-    await this.actionRepository.updateAll({ status: ActionStatus.ARCHIEVED }, {
-      userId: { like: id },
-      or: actions.map(act => ({ id: act }))
-    })
+    const {id} = currentUserProfile;
+    const {actions} = req;
+    await this.actionRepository.updateAll(
+      {status: ActionStatus.ARCHIEVED},
+      {
+        userId: {like: id},
+        or: actions.map(act => ({id: act})),
+      },
+    );
   }
 
   @post('/actions/list', {
@@ -151,15 +163,15 @@ export class ActionController {
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUserProfile: UserProfile,
     @requestBody(ActionsRequestBody)
-    req: { actions: string[] },
+    req: {actions: string[]},
   ): Promise<void> {
-    const { id } = currentUserProfile;
-    const { actions } = req;
+    const {id} = currentUserProfile;
+    const {actions} = req;
     await this.actionRepository.deleteAll({
-      userId: { like: id },
+      userId: {like: id},
       status: ActionStatus.ONGOING,
-      or: actions.map(act => ({ id: act }))
-    })
+      or: actions.map(act => ({id: act})),
+    });
   }
 
   @get('/actions/reasons', {
@@ -172,10 +184,10 @@ export class ActionController {
               type: 'object',
               required: ['reasons'],
               properties: {
-                reasons: { type: 'array' },
-              }
-            }
-          }
+                reasons: {type: 'array'},
+              },
+            },
+          },
         },
       },
     },
@@ -185,16 +197,16 @@ export class ActionController {
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUserProfile: UserProfile,
     @param.query.string('type') evaluationType?: string,
-  ): Promise<{ reasons: string[]; }> {
-    const { id } = currentUserProfile;
-    const filter = { userId: { like: id }, evaluationType };
-    const evaluations = await this.evaluationRepository.find({ where: filter });
-    const reasons = [];
+  ): Promise<{reasons: string[]}> {
+    const {id} = currentUserProfile;
+    const filter = {userId: {like: id}, evaluationType};
+    const evaluations = await this.evaluationRepository.find({where: filter});
+    const reasons: string[] = [];
     for (const evaluation of evaluations) {
       if (evaluation.influentFactor) {
-        reasons.push(evaluation.influentFactor)
+        reasons.push(evaluation.influentFactor);
       }
     }
-    return { reasons };
+    return {reasons};
   }
 }

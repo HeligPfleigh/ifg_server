@@ -9,6 +9,7 @@
       "dom",
       "esnext.asynciterable"
     ],
+    "noImplicitAny": false,
     "esModuleInterop": true,
     "experimentalDecorators": true
   },

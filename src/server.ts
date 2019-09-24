@@ -1,8 +1,9 @@
-import { IfgServerApplication } from './application';
-import { ApplicationConfig } from '@loopback/core';
-import express, { Request, Response } from 'express';
 import pEvent from 'p-event';
 import * as path from 'path';
+import {ApplicationConfig} from '@loopback/core';
+import express, {Request, Response, NextFunction} from 'express';
+import deeplink from 'node-deeplink';
+import {IfgServerApplication} from './application';
 
 export class ExpressServer {
   private app: express.Application;
@@ -14,9 +15,20 @@ export class ExpressServer {
     this.lbApp = new IfgServerApplication(options);
     this.app.use('/api', this.lbApp.requestHandler);
     // Custom Express routes
-    this.app.get('/resetpassword/:resetPasswordToken', function (_req: Request, res: Response) {
+    this.app.get(
+      '/deeplink',
+      function(req: Request, res: Response, next: NextFunction) {
+        req.query['fallback'] = req.query.url;
+        return next();
+      },
+      deeplink({fallback: 'none'}),
+    );
+    this.app.get('/resetpassword/:resetPasswordToken', function(
+      _req: Request,
+      res: Response,
+    ) {
       const resetPasswordToken = _req.params.resetPasswordToken;
-      res.render(path.resolve('view/resetpassword'), { resetPasswordToken });
+      res.render(path.resolve('view/resetpassword'), {resetPasswordToken});
     });
   }
 

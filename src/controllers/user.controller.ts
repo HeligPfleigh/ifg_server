@@ -402,34 +402,17 @@ export class UserController {
         resetPasswordToken,
       });
 
-      await this.mailerService.sendMail({
-        to: email,
-        subject:
-          'I FEEL GOOD  Password reset - Réinitialisation du mot de passe',
-        html:
-          `
-          <div>
-            <p>Hello ${existedUser.username},</p>
-            <p>Have you forgot your password ? No problem, just click on the link below to reset.</p>
-            <a href="https://api.ifeelgood.mttjsc.com/resetpassword/` +
-          resetPasswordToken +
-          `">Reset password</a>
-            <p>Have fun with the app and we wish you feel so good every day !  ;-)</p>
-            <br />
-            <p>Your I Feel Good team</p>
-            <br />
-            <hr />
-            <br />
-            <p>Bonjour ${existedUser.username},</p>
-            <p>Tu as oublié ton mot de passe ? Aucun souci, tu as juste besoin de cliquer sur le lien ci-dessous pour créer un nouveau mot de passe.</p>
-            <a href="https://api.ifeelgood.mttjsc.com/resetpassword/` +
-          resetPasswordToken +
-          `">Reset password</a>
-            <p>Amuse-toi bien avec l'appli et on te souhaite de te sentir tellement bien chaque jour !  ;-)</p>
-            <br />
-            <p>Ton équipe I Feel Good</p>
-          <div>
-        `,
+      await this.mailerService.send({
+        template: 'reset-password',
+        message: {
+          from:
+            '"I FEEL GOOD Reset Password - Réinitialisation du mot de passe" <no-reply@ifeelgood.com>',
+          to: email,
+        },
+        locals: {
+          username: existedUser.username,
+          linking: `https://api.ifeelgood.mttjsc.com/deeplink?url=ifeelgood://auth/resetPwd/${resetPasswordToken}`,
+        },
       });
     } catch (error) {
       throw new HttpErrors.BadRequest(error);

@@ -65,7 +65,7 @@ export default class MailerService {
 
   async sendMail(mailOptions: SendMailOptions): Promise<SentMessageInfo> {
     return this.transporter.sendMail({
-      from: '"👩‍🦰 I FEEL GOOD - SUPPORT" <info@ifeelgood.com>',
+      from: '"I FEEL GOOD - SUPPORT" <info@ifeelgood.com>',
       ...mailOptions,
     });
   }
