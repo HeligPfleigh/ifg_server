@@ -29,8 +29,9 @@ export const CreateNotificationRequestBody = {
 export interface UpdateNotificationSchema {
   title: string;
   content: string;
-  sendTime: number;
   language: string;
+  status: string;
+  sendTime?: number;
 }
 
 export const UpdateNotificationRequestBody = {
