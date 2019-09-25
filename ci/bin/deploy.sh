@@ -4,12 +4,12 @@
 set -e
 # Lets write the public key of our aws instance
 eval $(ssh-agent -s)
-echo "$PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+echo "$IFG_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
 
 echo "ARGS: $@"
 
 # ** Alternative approach
-# echo -e "$PRIVATE_KEY" > /root/.ssh/id_rsa
+# echo -e "$IFG_PRIVATE_KEY" > /root/.ssh/id_rsa
 # chmod 600 /root/.ssh/id_rsa
 # ** End of alternative approach
 
