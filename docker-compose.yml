@@ -13,16 +13,16 @@ services:
       - "8001:3000"
     command: ["yarn", "start:watch"]
     depends_on:
-      - db
+      - mongodb-server
     secrets:
       - admin
       - firebaseDatabaseURL
       - serviceAccountKey
     environment:
-      ADMIN: '/run/secrets/admin'
-      FIREBASE_DATABASE_URL: '/run/secrets/firebaseDatabaseURL'
-      FIREBASE_SERVICE_ACCOUNT: '/run/secrets/serviceAccountKey'
-  db:
+      ADMIN: "/run/secrets/admin"
+      FIREBASE_DATABASE_URL: "/run/secrets/firebaseDatabaseURL"
+      FIREBASE_SERVICE_ACCOUNT: "/run/secrets/serviceAccountKey"
+  mongodb-server:
     image: mongo:4
     ports:
       - "27037:27017"

@@ -1,3 +1,8 @@
+image: ubuntu:18.04
+# check ssh tool installed
+before_script:
+  - "which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )"
+
 stages:
   - build
   - deploy
@@ -26,3 +31,30 @@ Publish Devlopment:
     - rancher-compose --url $RANCHER_SERVER --access-key $RANCHER_ACCESS_KEY --secret-key $RANCHER_SECRET_KEY --project-name I-FEEL-GOOD --file ci/rancher.yml up -d --upgrade --confirm-upgrade
   only:
     - master
+
+# build an image named production based on master
+Build Production:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - echo "$CI_REGISTRY_USER"
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+  script:
+    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME $CI_REGISTRY_IMAGE:production
+    - docker push $CI_REGISTRY_IMAGE:production
+  variables:
+    DOCKER_DRIVER: overlay2
+  only:
+    - master
+  when: manual
+
+Publish Production:
+  stage: deploy
+  script:
+    - bash ci/bin/deploy.sh production
+  only:
+    - master
+  when: manual

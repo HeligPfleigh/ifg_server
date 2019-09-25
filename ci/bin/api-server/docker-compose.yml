@@ -1,0 +1,33 @@
+version: "3.3"
+
+services:
+  api-server:
+    image: registry.mttjsc.com/i-feel-good/ifg_server:production
+    container_name: api-server
+    restart: always
+    network_mode: bridge
+    external_links:
+      - mongodb-server
+    environment:
+      NODE_ENV: production
+      VIRTUAL_PORT: "3000"
+      VIRTUAL_HOST: api.ifeelgood.mttjsc.com
+      LETSENCRYPT_HOST: api.ifeelgood.mttjsc.com
+      LETSENCRYPT_EMAIL: linh.le@mttjsc.com
+      ADMIN: "/run/secrets/ifg_admin_info"
+      FIREBASE_SERVICE_ACCOUNT: "/run/secrets/ifg_service_account_key"
+      FIREBASE_DATABASE_URL: "/run/secrets/ifg_firebase_database_url"
+    volumes:
+      - ./server-data/public:/home/node/app/public
+    secrets:
+      - ifg_admin_info
+      - ifg_service_account_key
+      - ifg_firebase_database_url
+
+secrets:
+  ifg_admin_info:
+    file: ./secrets/admin.json
+  ifg_firebase_database_url:
+    file: ./secrets/firebaseDatabaseURL
+  ifg_service_account_key:
+    file: ./secrets/serviceAccountKey.json

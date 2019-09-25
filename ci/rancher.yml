@@ -5,7 +5,7 @@ services:
     expose:
       - "3000"
     depends_on:
-      - db
+      - mongodb-server
     secrets:
       - ifg_admin_info
       - ifg_service_account_key
@@ -13,8 +13,8 @@ services:
     environment:
       NODE_ENV: production
       VIRTUAL_PORT: "3000"
-      VIRTUAL_HOST: api.ifeelgood.mttjsc.com
-      LETSENCRYPT_HOST: api.ifeelgood.mttjsc.com
+      VIRTUAL_HOST: api.ifeelgood-dev.mttjsc.com
+      LETSENCRYPT_HOST: api.ifeelgood-dev.mttjsc.com
       LETSENCRYPT_EMAIL: linh.le@mttjsc.com
       ADMIN: "/run/secrets/ifg_admin_info"
       FIREBASE_SERVICE_ACCOUNT: "/run/secrets/ifg_service_account_key"
@@ -23,7 +23,7 @@ services:
       io.rancher.container.system: MTT-LOCAL
       io.rancher.container.pull_image: always
 
-  db:
+  mongodb-server:
     image: mongo:4
     ports:
       - "27037:27017"

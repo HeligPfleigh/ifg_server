@@ -1,8 +1,8 @@
 {
   "name": "ifg_db",
   "connector": "mongodb",
-  "url": "mongodb://db:27017/ifg",
-  "host": "db",
+  "url": "mongodb://mongodb-server:27017/ifg",
+  "host": "mongodb-server",
   "port": 27017,
   "user": "admin",
   "password": "Admin123$%^",
