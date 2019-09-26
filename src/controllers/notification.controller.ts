@@ -186,6 +186,7 @@ export class NotificationController {
       content: notification.content,
       sendTime: new Date(notification.sendTime || 0).toISOString(),
       language: notification.language,
+      status: notification.status,
     }
     // reschedule
     schedule.cancelJob(`${id}`);
