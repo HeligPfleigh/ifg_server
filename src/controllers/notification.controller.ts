@@ -82,6 +82,7 @@ export class NotificationController {
       return this.notificationRepository.create({
         title,
         content: notification.content,
+        sendTime: new Date().toISOString(),
         userId: id
       });
     }
