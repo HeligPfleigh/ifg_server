@@ -83,6 +83,7 @@ export class NotificationController {
         title,
         content: notification.content,
         sendTime: new Date().toISOString(),
+        language: notification.language,
         userId: id
       });
     }
