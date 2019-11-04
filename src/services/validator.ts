@@ -30,9 +30,9 @@ export function validateCredentials(credentials: SignUpCredentials) {
   }
 
   // Validate Username
-  if (credentials.username.length < 8) {
+  if (credentials.username.length < 4) {
     throw new HttpErrors.UnprocessableEntity(
-      'username must be minimum 8 characters',
+      'username must be minimum 4 characters',
     );
   }
 
