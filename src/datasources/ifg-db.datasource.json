@@ -4,8 +4,8 @@
   "url": "mongodb://mongodb-server:27017/ifg",
   "host": "mongodb-server",
   "port": 27017,
-  "user": "admin",
-  "password": "Admin123$%^",
+  "user": "",
+  "password": "",
   "database": "ifg",
   "useNewUrlParser": true
 }
