@@ -6,6 +6,8 @@ services:
       - "3000"
     depends_on:
       - mongodb-server
+    links:
+      - mongodb-server:mongodb-server
     secrets:
       - ifg_admin_info
       - ifg_service_account_key
