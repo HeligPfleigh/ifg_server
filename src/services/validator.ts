@@ -56,17 +56,17 @@ export function validateChangePassword(req: IChangePassword) {
 
 export function validateSaveEvaluation(req: Omit<Evaluation, 'id'>) {
   const { evaluationType, impactType } = req;
-  if (!Object.values(Enum.EvaluationType).includes(evaluationType)) {
+  if (!Object.values(Enum.EvaluationType).includes(evaluationType as Enum.EvaluationType)) {
     throw new HttpErrors.BadRequest("The evaluation type isn't existed");
   }
 
-  if (impactType && !Object.values(Enum.ImpactType).includes(impactType)) {
+  if (impactType && !Object.values(Enum.ImpactType).includes(impactType as Enum.ImpactType)) {
     throw new HttpErrors.BadRequest("The impact type isn't existed");
   }
 }
 
 export function validateEvaluationType(type: string) {
-  if (!Object.values(Enum.EvaluationType).includes(type)) {
+  if (!Object.values(Enum.EvaluationType).includes(type as Enum.EvaluationType)) {
     throw new HttpErrors.BadRequest("The evaluation type isn't existed");
   }
 }

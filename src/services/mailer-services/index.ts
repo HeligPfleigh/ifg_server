@@ -6,7 +6,7 @@ import Nodemailer, {
 import path from 'path';
 import get from 'lodash/get';
 import EmailTemplate from 'email-templates';
-import {config} from '../../configs';
+import { config } from '../../configs';
 
 interface EmailOptions {
   /**
@@ -33,7 +33,7 @@ export default class MailerService {
     this.mailer = new EmailTemplate({
       send: true,
       preview: false,
-      message: undefined,
+      message: {},
       i18n: {
         indent: '  ',
         defaultLocale: 'en',
